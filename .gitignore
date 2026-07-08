@@ -1,0 +1,15 @@
+node_modules/
+.next/
+dist/
+build/
+coverage/
+.env
+.env.local
+.DS_Store
+storage/local-dev-only/*
+!storage/local-dev-only/.gitkeep
+__pycache__/
+.pytest_cache/
+.venv/
+*.pyc
+
