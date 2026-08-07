@@ -3,8 +3,8 @@ import type React from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Closira Admin",
-  description: "Admin dashboard for Closira"
+  title: "Closira | AI wardrobe and styling assistant",
+  description: "Organize your wardrobe, plan outfits, avoid duplicate shopping, and get AI-powered styling suggestions."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

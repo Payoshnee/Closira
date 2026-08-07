@@ -2,6 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --background: 36 100% 99%;
+    --foreground: 0 5% 12%;
+    --muted: 28 28% 42%;
+    --border: 30 28% 87%;
+    --accent: 349 40% 56%;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background:
+      radial-gradient(circle at 12% 8%, rgba(232, 201, 154, 0.22), transparent 26rem),
+      radial-gradient(circle at 82% 4%, rgba(200, 183, 232, 0.18), transparent 24rem),
+      #fffdf8;
+    color: #201d1d;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
+  }
+
+  a {
+    text-underline-offset: 4px;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -10,3 +38,6 @@ body {
   margin: 0;
 }
 
+::selection {
+  background: rgba(189, 96, 115, 0.22);
+}
