@@ -1,15 +1,16 @@
 import Link from "next/link";
+import { AuthForm } from "@/components/forms";
 import { PublicShell } from "@/components/layout/public-shell";
-import { AuthCard } from "@/components/marketing/auth-card";
 
 export default function LoginPage() {
   return (
     <PublicShell>
       <main className="px-5 py-16">
-        <AuthCard
+        <AuthForm
           title="Log in to Closira"
-          description="Dashboard access arrives in Run 2. This entry screen is ready for the real auth service."
+          description="Access the private wardrobe dashboard. Real token persistence will connect to the NestJS auth API when those endpoints are implemented."
           cta="Log in"
+          action="/dashboard"
           footer={
             <>
               New to Closira?{" "}
@@ -23,4 +24,3 @@ export default function LoginPage() {
     </PublicShell>
   );
 }
-

@@ -1,15 +1,16 @@
 import Link from "next/link";
+import { AuthForm } from "@/components/forms";
 import { PublicShell } from "@/components/layout/public-shell";
-import { AuthCard } from "@/components/marketing/auth-card";
 
 export default function SignupPage() {
   return (
     <PublicShell>
       <main className="px-5 py-16">
-        <AuthCard
+        <AuthForm
           title="Start organizing your wardrobe"
-          description="Join early access and be ready for the full wardrobe dashboard in the next implementation run."
+          description="Create a local dashboard entry point for the current frontend foundation. Registration API wiring will replace this placeholder flow."
           cta="Request early access"
+          action="/dashboard"
           includeName
           footer={
             <>
@@ -24,4 +25,3 @@ export default function SignupPage() {
     </PublicShell>
   );
 }
-

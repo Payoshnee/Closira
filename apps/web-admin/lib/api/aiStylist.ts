@@ -1,5 +1,7 @@
-export type AiStylistStatus = { available: false; reason: string };
-export async function getAiStylistStatus(): Promise<AiStylistStatus> {
-  return { available: false, reason: "AI stylist API is scheduled for Run 5." };
-}
+import { mockAiRecommendations } from "@/lib/mock/ai";
+import type { AiStylistRecommendation } from "@/types/ai";
 
+export async function listAiStylistRecommendations(): Promise<AiStylistRecommendation[]> {
+  // TODO: Replace mock adapter with POST /ai/recommend-outfit once the AI endpoint is implemented.
+  return mockAiRecommendations;
+}

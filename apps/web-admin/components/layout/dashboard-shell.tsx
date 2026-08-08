@@ -1,4 +1,4 @@
-import { BarChart3, CalendarDays, LayoutDashboard, Shirt, Sparkles, Tags, UserRound } from "lucide-react";
+import { BarChart3, CalendarDays, CreditCard, LayoutDashboard, ShieldCheck, Shirt, Sparkles, Tags, UserRound } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { routes } from "@/lib/routes";
@@ -8,10 +8,14 @@ const dashboardNav = [
   { href: "/dashboard/wardrobe", label: "Wardrobe", icon: Shirt },
   { href: "/dashboard/categories", label: "Categories", icon: Tags },
   { href: "/dashboard/tags", label: "Tags", icon: Tags },
-  { href: "/dashboard/outfits", label: "Outfits", icon: CalendarDays },
+  { href: "/dashboard/outfits", label: "Outfits", icon: Shirt },
+  { href: "/dashboard/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/dashboard/ai-stylist", label: "AI stylist", icon: Sparkles },
+  { href: "/dashboard/shopping-assistant", label: "Shopping", icon: Sparkles },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/dashboard/profile", label: "Profile", icon: UserRound }
+  { href: "/dashboard/profile", label: "Profile", icon: UserRound },
+  { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
+  { href: "/dashboard/admin", label: "Admin", icon: ShieldCheck }
 ];
 
 export function DashboardShell({ children }: { children: ReactNode }) {
@@ -44,10 +48,20 @@ export function DashboardShell({ children }: { children: ReactNode }) {
               Public site
             </Link>
           </div>
+          <nav className="mt-4 flex gap-2 overflow-x-auto pb-1 lg:hidden" aria-label="Mobile dashboard navigation">
+            {dashboardNav.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link key={item.href} href={item.href} className="inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 text-xs font-semibold text-stone-700">
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
         </header>
         <main className="px-5 py-8 lg:px-8">{children}</main>
       </div>
     </div>
   );
 }
-

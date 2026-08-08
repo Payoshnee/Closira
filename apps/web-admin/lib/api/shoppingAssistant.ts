@@ -1,5 +1,7 @@
-export type ShoppingAssistantStatus = { available: false; reason: string };
-export async function getShoppingAssistantStatus(): Promise<ShoppingAssistantStatus> {
-  return { available: false, reason: "Shopping assistant API is scheduled for Run 5." };
-}
+import { mockShoppingChecks } from "@/lib/mock/ai";
+import type { ShoppingAssistantCheck } from "@/types/ai";
 
+export async function listShoppingAssistantChecks(): Promise<ShoppingAssistantCheck[]> {
+  // TODO: Replace mock adapter with POST /ai/shopping-check once the AI endpoint is implemented.
+  return mockShoppingChecks;
+}
