@@ -12,6 +12,5 @@ export default async function EditWardrobeItemPage({ params }: { params: Promise
     notFound();
   }
 
-  return <WardrobeEditor title="Edit wardrobe item" description="Update wardrobe metadata. Saving is prepared for PATCH /wardrobe/items/:id when the backend endpoint is implemented." categories={categories} tags={tags} item={item} />;
+  return <WardrobeEditor title="Edit wardrobe item" description="Update wardrobe metadata in the API-backed wardrobe." categories={categories} tags={tags} item={item} />;
 }
-

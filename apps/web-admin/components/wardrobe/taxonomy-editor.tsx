@@ -1,13 +1,21 @@
+"use client";
+
+import { useActionState } from "react";
+import { createTaxonomy } from "@/lib/actions/wardrobe";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 export function TaxonomyEditor({ mode }: { mode: "category" | "tag" }) {
   const isTag = mode === "tag";
+  const [state, action, pending] = useActionState(createTaxonomy.bind(null, mode), {
+    status: "ready" as const,
+    message: ""
+  });
 
   return (
     <Card className="p-5">
-      <form className="grid gap-3 md:grid-cols-[1fr_220px_auto]" action={isTag ? "/dashboard/tags" : "/dashboard/categories"}>
+      <form className="grid gap-3 md:grid-cols-[1fr_220px_auto]" action={action}>
         <label className="block text-sm font-medium text-charcoal">
           {isTag ? "Tag name" : "Category name"}
           <Input className="mt-2" name="name" placeholder={isTag ? "Example: Brunch" : "Example: Occasion wear"} required />
@@ -29,10 +37,14 @@ export function TaxonomyEditor({ mode }: { mode: "category" | "tag" }) {
           </label>
         )}
         <div className="flex items-end">
-          <Button type="submit" className="w-full">{isTag ? "Add tag" : "Add category"}</Button>
+          <Button type="submit" className="w-full" disabled={pending}>{pending ? "Adding..." : isTag ? "Add tag" : "Add category"}</Button>
         </div>
+        {state.message ? (
+          <p className={`text-sm font-medium md:col-span-3 ${state.status === "error" ? "text-red-700" : "text-emerald-700"}`} role="status">
+            {state.message}
+          </p>
+        ) : null}
       </form>
     </Card>
   );
 }
-

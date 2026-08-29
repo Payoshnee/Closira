@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { duplicateOutfit, toggleOutfitFavorite } from "@/lib/actions/outfits";
 import { getOutfit } from "@/lib/api/outfits";
 
 export default async function OutfitDetailPage({ params }: { params: Promise<{ outfitId: string }> }) {
@@ -23,6 +24,16 @@ export default async function OutfitDetailPage({ params }: { params: Promise<{ o
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">
           <ButtonLink href={`/dashboard/outfits/${outfit.id}/edit`} variant="secondary">Edit outfit</ButtonLink>
+          <form action={toggleOutfitFavorite.bind(null, outfit.id, outfit.isFavorite)}>
+            <button className="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-charcoal hover:bg-ivory-100" type="submit">
+              {outfit.isFavorite ? "Remove favorite" : "Favorite"}
+            </button>
+          </form>
+          <form action={duplicateOutfit.bind(null, outfit.id)}>
+            <button className="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-charcoal hover:bg-ivory-100" type="submit">
+              Duplicate
+            </button>
+          </form>
           <ButtonLink href="/dashboard/calendar/new"><CalendarPlus className="mr-2 h-4 w-4" aria-hidden="true" /> Plan it</ButtonLink>
         </div>
       </div>
@@ -41,4 +52,3 @@ export default async function OutfitDetailPage({ params }: { params: Promise<{ o
     </div>
   );
 }
-

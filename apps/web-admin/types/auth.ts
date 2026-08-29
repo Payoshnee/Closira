@@ -3,6 +3,7 @@ export type AuthUser = {
   name: string;
   email: string;
   role: "user" | "admin";
+  emailVerified?: boolean;
   wardrobeItemCount: number;
 };
 
@@ -14,6 +15,6 @@ export type AuthSession = {
 export type AuthIntent = "login" | "signup" | "forgot-password";
 
 export type AuthFormState = {
-  status: "ready" | "deferred";
+  status: "ready" | "success" | "error";
   message: string;
 };

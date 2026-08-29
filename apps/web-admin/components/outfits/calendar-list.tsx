@@ -1,6 +1,7 @@
 import { AlertTriangle, Bell, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { markCalendarOutfitWorn } from "@/lib/actions/outfits";
 import type { OutfitCalendarEvent } from "@/types/calendar";
 
 function formatDate(value: string) {
@@ -31,6 +32,11 @@ export function CalendarList({ events }: { events: OutfitCalendarEvent[] }) {
               <p className="font-semibold text-charcoal">{event.outfit.name}</p>
               <p className="mt-2 flex items-center gap-2 text-sm text-stone-600"><MapPin className="h-4 w-4" aria-hidden="true" /> {event.location}</p>
               <p className="mt-2 flex items-center gap-2 text-sm text-stone-600"><Bell className="h-4 w-4" aria-hidden="true" /> {event.reminderStatus}</p>
+              <form action={markCalendarOutfitWorn.bind(null, event.id)} className="mt-4">
+                <button className="inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-charcoal px-4 py-2 text-sm font-semibold text-white hover:bg-stone-800" type="submit">
+                  Mark worn
+                </button>
+              </form>
             </div>
           </div>
         </Card>
@@ -38,4 +44,3 @@ export function CalendarList({ events }: { events: OutfitCalendarEvent[] }) {
     </div>
   );
 }
-

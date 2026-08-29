@@ -20,3 +20,39 @@ export type ShoppingAssistantCheck = {
   similarItems: WardrobeItem[];
 };
 
+export type AiProvider = "native" | "openai" | "anthropic" | "gemini" | "azure-openai" | "ollama" | "custom";
+
+export type AiProviderOption = {
+  id: AiProvider;
+  name: string;
+  requiresApiKey: boolean;
+  endpointLabel?: string;
+};
+
+export type AiProviderSettings = {
+  activeProvider: AiProvider;
+  nativeEnabled: boolean;
+  connectedProviders: AiProvider[];
+  supportedProviders: AiProviderOption[];
+};
+
+export type AiProviderSettingsInput = Partial<AiProviderSettings> & {
+  provider?: AiProvider;
+  apiKey?: string;
+  baseUrl?: string;
+  model?: string;
+};
+
+export type ClothingAnalysisResult = {
+  detected_category: string;
+  detected_colors: string[];
+  suggested_tags: string[];
+  confidence: number;
+  fallback_used: boolean;
+  model: string;
+};
+
+export type SimilarWardrobeResult = {
+  item: WardrobeItem;
+  similarity: number;
+};

@@ -1,4 +1,4 @@
-import { BarChart3, CalendarDays, CreditCard, LayoutDashboard, ShieldCheck, Shirt, Sparkles, Tags, UserRound } from "lucide-react";
+import { BarChart3, CalendarDays, CreditCard, LayoutDashboard, Settings, ShieldCheck, Shirt, Sparkles, Tags, UserRound } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { routes } from "@/lib/routes";
@@ -11,6 +11,7 @@ const dashboardNav = [
   { href: "/dashboard/outfits", label: "Outfits", icon: Shirt },
   { href: "/dashboard/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/dashboard/ai-stylist", label: "AI stylist", icon: Sparkles },
+  { href: "/dashboard/ai-settings", label: "AI settings", icon: Settings },
   { href: "/dashboard/shopping-assistant", label: "Shopping", icon: Sparkles },
   { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/dashboard/profile", label: "Profile", icon: UserRound },

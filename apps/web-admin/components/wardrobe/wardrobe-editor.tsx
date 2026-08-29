@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useActionState } from "react";
+import { saveWardrobeItem } from "@/lib/actions/wardrobe";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
@@ -17,6 +21,11 @@ export function WardrobeEditor({
   tags: Tag[];
   item?: WardrobeItem;
 }) {
+  const [state, formAction, pending] = useActionState(saveWardrobeItem.bind(null, item?.id), {
+    status: "ready" as const,
+    message: ""
+  });
+
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div>
@@ -25,7 +34,7 @@ export function WardrobeEditor({
         <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">{description}</p>
       </div>
       <Card className="p-6">
-        <form className="grid gap-5 md:grid-cols-2" action="/dashboard/wardrobe">
+        <form className="grid gap-5 md:grid-cols-2" action={formAction}>
           <label className="block text-sm font-medium text-charcoal">
             Item title
             <Input className="mt-2" name="title" defaultValue={item?.title} required />
@@ -72,8 +81,11 @@ export function WardrobeEditor({
             Notes
             <Textarea className="mt-2" name="notes" defaultValue={item?.notes} />
           </label>
+          {state.status === "error" ? (
+            <p className="text-sm font-medium text-red-700 md:col-span-2" role="alert">{state.message}</p>
+          ) : null}
           <div className="flex flex-col gap-3 sm:flex-row md:col-span-2">
-            <Button type="submit">{item ? "Save metadata" : "Create item"}</Button>
+            <Button type="submit" disabled={pending}>{pending ? "Saving..." : item ? "Save metadata" : "Create item"}</Button>
             <Link href="/dashboard/wardrobe" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-charcoal hover:bg-ivory-100">
               Cancel
             </Link>

@@ -1,9 +1,530 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [citext, pgcrypto, vector]
 }
 
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  STYLIST
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+}
+
+enum WardrobeItemStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+enum Visibility {
+  PRIVATE
+  SHARED
+  PUBLIC
+}
+
+enum OutfitSlot {
+  TOP
+  BOTTOM
+  DRESS
+  OUTERWEAR
+  SHOES
+  BAG
+  ACCESSORY
+  OTHER
+}
+
+enum CalendarPlanStatus {
+  PLANNED
+  WORN
+  SKIPPED
+  CANCELED
+}
+
+enum AiProviderType {
+  NATIVE
+  OPENAI
+  ANTHROPIC
+  GEMINI
+  AZURE_OPENAI
+  OLLAMA
+  CUSTOM
+}
+
+enum AiJobType {
+  CLOTHING_ANALYSIS
+  AUTO_TAGGING
+  IMAGE_EMBEDDING
+  OUTFIT_RECOMMENDATION
+  SHOPPING_CHECK
+  VIRTUAL_TRY_ON
+}
+
+enum AiJobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  FALLBACK_USED
+}
+
+enum StorageProvider {
+  LOCAL
+  S3
+  R2
+  GCS
+}
+
+enum BillingProvider {
+  STRIPE
+  MANUAL
+}
+
+enum BillingGatewayStatus {
+  ENABLED
+  DISABLED
+  TESTING
+}
+
+model User {
+  id                String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email             String                @unique @db.Citext
+  passwordHash      String                @map("password_hash")
+  name              String
+  role              UserRole              @default(USER)
+  imageUrl          String?               @map("image_url")
+  emailVerifiedAt   DateTime?             @map("email_verified_at")
+  lastLoginAt       DateTime?             @map("last_login_at")
+  createdAt         DateTime              @default(now()) @map("created_at")
+  updatedAt         DateTime              @updatedAt @map("updated_at")
+  deletedAt         DateTime?             @map("deleted_at")
+  accounts          AuthAccount[]
+  sessions          Session[]
+  verificationCodes VerificationCode[]
+  passwordResets    PasswordReset[]
+  profile           UserProfile?
+  categories        Category[]
+  tags              Tag[]
+  wardrobeItems     WardrobeItem[]
+  outfits           Outfit[]
+  calendarPlans     CalendarPlan[]
+  usageLogs         WardrobeUsageLog[]
+  aiSettings        AiProviderSetting[]
+  aiJobs            AiJob[]
+  subscriptions     Subscription[]
+  billingGateways   BillingGateway[]
+  auditLogs         AuditLog[]            @relation("ActorAuditLogs")
+  tryOnSessions     VirtualTryOnSession[]
+
+  @@map("users")
+}
+
+model AuthAccount {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String   @map("user_id") @db.Uuid
+  provider          String
+  providerAccountId String   @map("provider_account_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("auth_accounts")
+}
+
+model Session {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  refreshTokenHash String    @unique @map("refresh_token_hash")
+  userAgent        String?   @map("user_agent")
+  ipAddress        String?   @map("ip_address")
+  expiresAt        DateTime  @map("expires_at")
+  revokedAt        DateTime? @map("revoked_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("sessions")
+}
+
+model VerificationCode {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  codeHash  String    @map("code_hash")
+  purpose   String
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose, expiresAt])
+  @@map("verification_codes")
+}
+
+model PasswordReset {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_resets")
+}
+
+model UserProfile {
+  userId       String   @id @map("user_id") @db.Uuid
+  timezone     String   @default("Asia/Kolkata")
+  country      String?
+  city         String?
+  styleWords   String[] @default([]) @map("style_words")
+  sizes        Json     @default("{}")
+  preferences  Json     @default("{}")
+  measurements Json     @default("{}")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model Category {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String         @map("user_id") @db.Uuid
+  name      String
+  slug      String
+  color     String?
+  parentId  String?        @map("parent_id") @db.Uuid
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    Category?      @relation("CategoryChildren", fields: [parentId], references: [id], onDelete: SetNull)
+  children  Category[]     @relation("CategoryChildren")
+  items     WardrobeItem[]
+
+  @@unique([userId, slug])
+  @@map("categories")
+}
+
+model Tag {
+  id        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String        @map("user_id") @db.Uuid
+  name      String
+  slug      String
+  color     String?
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     WardrobeTag[]
+
+  @@unique([userId, slug])
+  @@map("tags")
+}
+
+model WardrobeItem {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           String             @map("user_id") @db.Uuid
+  categoryId       String?            @map("category_id") @db.Uuid
+  name             String
+  brand            String?
+  color            String?
+  secondaryColors  String[]           @default([]) @map("secondary_colors")
+  size             String?
+  season           String[]           @default([])
+  occasions        String[]           @default([])
+  material         String?
+  pattern          String?
+  fit              String?
+  purchaseUrl      String?            @map("purchase_url")
+  purchasePrice    Decimal?           @map("purchase_price") @db.Decimal(10, 2)
+  purchaseCurrency String?            @map("purchase_currency") @db.Char(3)
+  status           WardrobeItemStatus @default(ACTIVE)
+  isFavorite       Boolean            @default(false) @map("is_favorite")
+  lastWornAt       DateTime?          @map("last_worn_at")
+  wearCount        Int                @default(0) @map("wear_count")
+  notes            String?
+  metadata         Json               @default("{}")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category         Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  images           WardrobeImage[]
+  tags             WardrobeTag[]
+  outfitItems      OutfitItem[]
+  usageLogs        WardrobeUsageLog[]
+  embeddings       ImageEmbedding[]
+
+  @@index([userId, categoryId])
+  @@index([userId, status, updatedAt])
+  @@map("wardrobe_items")
+}
+
+model WardrobeImage {
+  id          String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  itemId      String           @map("item_id") @db.Uuid
+  storageKey  String           @unique @map("storage_key")
+  provider    StorageProvider  @default(LOCAL)
+  url         String?
+  contentType String           @map("content_type")
+  byteSize    Int              @map("byte_size")
+  width       Int?
+  height      Int?
+  altText     String?          @map("alt_text")
+  isPrimary   Boolean          @default(false) @map("is_primary")
+  analysis    Json             @default("{}")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  item        WardrobeItem     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  embeddings  ImageEmbedding[]
+
+  @@index([itemId, isPrimary])
+  @@map("wardrobe_images")
+}
+
+model WardrobeTag {
+  itemId String       @map("item_id") @db.Uuid
+  tagId  String       @map("tag_id") @db.Uuid
+  item   WardrobeItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  tag    Tag          @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, tagId])
+  @@map("wardrobe_tags")
+}
+
+model Outfit {
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String         @map("user_id") @db.Uuid
+  name          String
+  description   String?
+  occasion      String?
+  season        String[]       @default([])
+  visibility    Visibility     @default(PRIVATE)
+  coverImageUrl String?        @map("cover_image_url")
+  isFavorite    Boolean        @default(false) @map("is_favorite")
+  source        String         @default("manual")
+  metadata      Json           @default("{}")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items         OutfitItem[]
+  plans         CalendarPlan[]
+
+  @@index([userId, updatedAt])
+  @@map("outfits")
+}
+
+model OutfitItem {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  outfitId  String       @map("outfit_id") @db.Uuid
+  itemId    String       @map("item_id") @db.Uuid
+  slot      OutfitSlot
+  sortOrder Int          @default(0) @map("sort_order")
+  outfit    Outfit       @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  item      WardrobeItem @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  @@unique([outfitId, itemId, slot])
+  @@index([itemId])
+  @@map("outfit_items")
+}
+
+model CalendarPlan {
+  id        String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String             @map("user_id") @db.Uuid
+  outfitId  String             @map("outfit_id") @db.Uuid
+  startsAt  DateTime           @map("starts_at")
+  endsAt    DateTime?          @map("ends_at")
+  title     String
+  location  String?
+  notes     String?
+  status    CalendarPlanStatus @default(PLANNED)
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outfit    Outfit             @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startsAt])
+  @@map("calendar_plans")
+}
+
+model WardrobeUsageLog {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String       @map("user_id") @db.Uuid
+  itemId    String       @map("item_id") @db.Uuid
+  wornAt    DateTime     @map("worn_at")
+  context   String?
+  notes     String?
+  createdAt DateTime     @default(now()) @map("created_at")
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item      WardrobeItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([userId, wornAt])
+  @@index([itemId, wornAt])
+  @@map("wardrobe_usage_logs")
+}
+
+model AiProviderSetting {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String         @map("user_id") @db.Uuid
+  provider        AiProviderType
+  displayName     String         @map("display_name")
+  isEnabled       Boolean        @default(false) @map("is_enabled")
+  isDefault       Boolean        @default(false) @map("is_default")
+  model           String?
+  baseUrl         String?        @map("base_url")
+  encryptedSecret String?        @map("encrypted_secret")
+  config          Json           @default("{}")
+  lastValidatedAt DateTime?      @map("last_validated_at")
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@index([userId, isDefault])
+  @@map("ai_provider_settings")
+}
+
+model AiJob {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String         @map("user_id") @db.Uuid
+  provider     AiProviderType
+  type         AiJobType
+  status       AiJobStatus    @default(QUEUED)
+  input        Json           @default("{}")
+  output       Json           @default("{}")
+  confidence   Decimal?       @db.Decimal(5, 4)
+  errorCode    String?        @map("error_code")
+  errorMessage String?        @map("error_message")
+  startedAt    DateTime?      @map("started_at")
+  finishedAt   DateTime?      @map("finished_at")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type, createdAt])
+  @@index([status, createdAt])
+  @@map("ai_jobs")
+}
+
+model ImageEmbedding {
+  id        String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  itemId    String                     @map("item_id") @db.Uuid
+  imageId   String?                    @map("image_id") @db.Uuid
+  model     String
+  dimension Int
+  embedding Unsupported("vector(768)")
+  metadata  Json                       @default("{}")
+  createdAt DateTime                   @default(now()) @map("created_at")
+  item      WardrobeItem               @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  image     WardrobeImage?             @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  @@index([itemId])
+  @@map("image_embeddings")
+}
+
+model VirtualTryOnSession {
+  id                String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String      @map("user_id") @db.Uuid
+  consentAcceptedAt DateTime    @map("consent_accepted_at")
+  personImageKey    String      @map("person_image_key")
+  garmentImageKey   String      @map("garment_image_key")
+  resultImageKey    String?     @map("result_image_key")
+  status            AiJobStatus @default(QUEUED)
+  metadata          Json        @default("{}")
+  deletedAt         DateTime?   @map("deleted_at")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("virtual_try_on_sessions")
+}
+
+model Subscription {
+  id                   String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId               String             @map("user_id") @db.Uuid
+  provider             BillingProvider    @default(STRIPE)
+  providerKey          String             @default("manual") @map("provider_key")
+  plan                 SubscriptionPlan
+  status               SubscriptionStatus
+  stripeCustomerId     String?            @map("stripe_customer_id")
+  stripeSubscriptionId String?            @unique @map("stripe_subscription_id")
+  currentPeriodStart   DateTime?          @map("current_period_start")
+  currentPeriodEnd     DateTime?          @map("current_period_end")
+  cancelAtPeriodEnd    Boolean            @default(false) @map("cancel_at_period_end")
+  entitlements         Json               @default("{}")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices             Invoice[]
+
+  @@index([userId, status])
+  @@map("subscriptions")
+}
+
+model Invoice {
+  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  subscriptionId    String       @map("subscription_id") @db.Uuid
+  providerInvoiceId String?      @unique @map("provider_invoice_id")
+  providerKey       String       @default("manual") @map("provider_key")
+  amountDue         Decimal      @map("amount_due") @db.Decimal(10, 2)
+  currency          String       @db.Char(3)
+  status            String
+  hostedInvoiceUrl  String?      @map("hosted_invoice_url")
+  issuedAt          DateTime?    @map("issued_at")
+  paidAt            DateTime?    @map("paid_at")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  subscription      Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@map("invoices")
+}
+
+model BillingGateway {
+  id               String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerId          String?              @map("owner_id") @db.Uuid
+  key              String
+  displayName      String               @map("display_name")
+  status           BillingGatewayStatus @default(TESTING)
+  baseUrl          String?              @map("base_url")
+  webhookSecretRef String?              @map("webhook_secret_ref")
+  secretRef        String?              @map("secret_ref")
+  config           Json                 @default("{}")
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+  owner            User?                @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  @@unique([ownerId, key])
+  @@index([key, status])
+  @@map("billing_gateways")
+}
+
+model AuditLog {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorId   String?  @map("actor_id") @db.Uuid
+  action    String
+  entity    String
+  entityId  String?  @map("entity_id")
+  metadata  Json     @default("{}")
+  ipAddress String?  @map("ip_address")
+  createdAt DateTime @default(now()) @map("created_at")
+  actor     User?    @relation("ActorAuditLogs", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId, createdAt])
+  @@index([entity, entityId])
+  @@map("audit_logs")
+}

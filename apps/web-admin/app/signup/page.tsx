@@ -8,9 +8,9 @@ export default function SignupPage() {
       <main className="px-5 py-16">
         <AuthForm
           title="Start organizing your wardrobe"
-          description="Create a local dashboard entry point for the current frontend foundation. Registration API wiring will replace this placeholder flow."
-          cta="Request early access"
-          action="/dashboard"
+          description="Create your Closira account and start building a wardrobe that syncs to the API."
+          cta="Create account"
+          intent="signup"
           includeName
           footer={
             <>

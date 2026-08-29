@@ -1,4 +1,4 @@
-import { BarChart3, CalendarDays, CheckCircle2, CreditCard, ShieldCheck, Shirt, Sparkles, Tags, UserRound } from "lucide-react";
+import { BarChart3, CalendarDays, CheckCircle2, CreditCard, Settings, ShieldCheck, Shirt, Sparkles, Tags, UserRound } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import type { AuthSession } from "@/types/auth";
@@ -11,6 +11,7 @@ const activeModules = [
   { href: "/dashboard/outfits", label: "Outfits", description: "Build reusable combinations from wardrobe pieces.", icon: Shirt },
   { href: "/dashboard/calendar", label: "Calendar", description: "Plan outfits for events and catch repeat conflicts.", icon: CalendarDays },
   { href: "/dashboard/ai-stylist", label: "AI stylist", description: "Review wardrobe-grounded AI outfit ideas.", icon: Sparkles },
+  { href: "/dashboard/ai-settings", label: "AI settings", description: "Connect native or custom AI providers.", icon: Settings },
   { href: "/dashboard/shopping-assistant", label: "Shopping", description: "Check possible purchases against owned items.", icon: Sparkles },
   { href: "/dashboard/analytics", label: "Analytics", description: "Track value, usage, colors, and reuse signals.", icon: BarChart3 },
   { href: "/dashboard/profile", label: "Profile", description: "Manage account, privacy, and style preferences.", icon: UserRound },

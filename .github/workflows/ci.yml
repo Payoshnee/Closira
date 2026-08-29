@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  node-and-api:
+    name: Node, API, and Web
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: closira
+          POSTGRES_PASSWORD: closira
+          POSTGRES_DB: closira
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U closira -d closira"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://closira:closira@localhost:5432/closira
+      REDIS_URL: redis://localhost:6379
+      NEXT_PUBLIC_API_URL: http://localhost:3001/api/v1
+      WEB_ORIGIN: http://localhost:3000
+      CORS_ORIGINS: http://localhost:3000
+      JWT_ACCESS_SECRET: ci-access-secret
+      JWT_REFRESH_SECRET: ci-refresh-secret
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm --workspace services/api run prisma:generate
+
+      - name: Apply database migrations
+        run: npm --workspace services/api exec prisma migrate deploy
+
+      - name: Seed database
+        run: npm --workspace services/api run prisma:seed
+
+      - name: Lint workspaces
+        run: npm run lint
+
+      - name: Typecheck web
+        run: npm run typecheck
+
+      - name: Test API
+        run: npm --workspace services/api run test
+
+      - name: Build API and web
+        run: npm run build
+
+  ai:
+    name: AI Service
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: services/ai/requirements.txt
+
+      - name: Install AI dependencies
+        run: python -m pip install -r services/ai/requirements.txt
+
+      - name: Train baseline model
+        run: |
+          PYTHONPATH=services/ai python services/ai/scripts/train_baseline.py \
+            --dataset services/ai/data/sample_manifest.jsonl \
+            --output services/ai/models/closira-baseline.json
+
+      - name: Evaluate baseline model
+        run: |
+          PYTHONPATH=services/ai python services/ai/scripts/evaluate_baseline.py \
+            --dataset services/ai/data/sample_manifest.jsonl \
+            --model services/ai/models/closira-baseline.json
+
+      - name: Test AI service
+        run: |
+          PYTHONPATH=services/ai \
+          CLOSIRA_MODEL_PATH=services/ai/models/closira-baseline.json \
+          python -m pytest services/ai/tests

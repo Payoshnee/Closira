@@ -3,6 +3,7 @@ export type WardrobeImage = {
   imageType: "front" | "back" | "close_up";
   alt: string;
   gradient: string;
+  url?: string | null;
 };
 
 export type Category = {
@@ -65,3 +66,11 @@ export type WardrobeSummary = {
   mostUsedCategory: string;
 };
 
+export type WardrobeUploadUrl = {
+  imageId: string;
+  storageKey: string;
+  uploadUrl: string;
+  publicUrl: string;
+  expiresInSeconds: number;
+  headers: Record<string, string>;
+};

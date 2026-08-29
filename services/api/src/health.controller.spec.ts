@@ -6,7 +6,14 @@ describe("HealthController", () => {
 
     expect(result.status).toBe("ok");
     expect(result.service).toBe("closira-api");
+    expect(result.uptimeSeconds).toEqual(expect.any(Number));
     expect(result.timestamp).toEqual(expect.any(String));
   });
-});
 
+  it("returns liveness status", () => {
+    const result = new HealthController().getLive();
+
+    expect(result.status).toBe("ok");
+    expect(result.service).toBe("closira-api");
+  });
+});

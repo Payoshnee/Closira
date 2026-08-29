@@ -11,3 +11,19 @@ def test_health() -> None:
     assert response.json()["status"] == "ok"
     assert response.json()["service"] == "closira-ai"
 
+
+def test_analyze_clothing() -> None:
+    client = TestClient(app)
+    response = client.post("/analyze-clothing", json={"item_name": "Ivory linen blazer"})
+
+    assert response.status_code == 200
+    assert "detected_category" in response.json()
+    assert "confidence" in response.json()
+
+
+def test_embed_image() -> None:
+    client = TestClient(app)
+    response = client.post("/embed-image", json={"item_name": "Ivory linen blazer"})
+
+    assert response.status_code == 200
+    assert response.json()["dimensions"] == 16

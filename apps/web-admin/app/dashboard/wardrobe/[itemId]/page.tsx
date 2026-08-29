@@ -3,6 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getWardrobeItem } from "@/lib/api/wardrobe";
+import { archiveWardrobeItem, markWardrobeItemWorn, toggleWardrobeFavorite } from "@/lib/actions/wardrobe";
+import { ImageUploadControl } from "@/components/wardrobe/image-upload-control";
 
 export default async function WardrobeItemPage({ params }: { params: Promise<{ itemId: string }> }) {
   const { itemId } = await params;
@@ -59,9 +61,24 @@ export default async function WardrobeItemPage({ params }: { params: Promise<{ i
         <div className="flex flex-col gap-3 sm:flex-row">
           <ButtonLink href="/dashboard/wardrobe" variant="secondary">Back to wardrobe</ButtonLink>
           <ButtonLink href={`/dashboard/wardrobe/${item.id}/edit`}>Edit metadata</ButtonLink>
+          <ImageUploadControl itemId={item.id} />
+          <form action={toggleWardrobeFavorite.bind(null, item.id, item.isFavorite)}>
+            <button className="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-charcoal hover:bg-ivory-100" type="submit">
+              {item.isFavorite ? "Remove favorite" : "Favorite"}
+            </button>
+          </form>
+          <form action={markWardrobeItemWorn.bind(null, item.id)}>
+            <button className="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-charcoal hover:bg-ivory-100" type="submit">
+              Mark worn
+            </button>
+          </form>
+          <form action={archiveWardrobeItem.bind(null, item.id)}>
+            <button className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-charcoal px-5 py-2.5 text-sm font-semibold text-white hover:bg-stone-800" type="submit">
+              Archive
+            </button>
+          </form>
         </div>
       </div>
     </div>
   );
 }
-

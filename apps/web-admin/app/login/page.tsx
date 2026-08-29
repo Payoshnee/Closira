@@ -8,9 +8,9 @@ export default function LoginPage() {
       <main className="px-5 py-16">
         <AuthForm
           title="Log in to Closira"
-          description="Access the private wardrobe dashboard. Real token persistence will connect to the NestJS auth API when those endpoints are implemented."
+          description="Access your private wardrobe dashboard with a secure Closira session."
           cta="Log in"
-          action="/dashboard"
+          intent="login"
           footer={
             <>
               New to Closira?{" "}

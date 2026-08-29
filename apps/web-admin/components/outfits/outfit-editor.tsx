@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useActionState } from "react";
+import { saveOutfit } from "@/lib/actions/outfits";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
@@ -6,15 +10,20 @@ import type { Outfit } from "@/types/outfits";
 import type { WardrobeItem } from "@/types/wardrobe";
 
 export function OutfitEditor({ outfit, wardrobeItems }: { outfit?: Outfit; wardrobeItems: WardrobeItem[] }) {
+  const [state, action, pending] = useActionState(saveOutfit.bind(null, outfit?.id), {
+    status: "ready" as const,
+    message: ""
+  });
+
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div>
         <p className="text-sm font-semibold uppercase tracking-wide text-rose-700">Outfit builder</p>
         <h1 className="mt-2 text-3xl font-bold text-charcoal">{outfit ? "Edit outfit" : "Create outfit"}</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">Build reusable outfit combinations from wardrobe pieces. Saving is prepared for the documented outfits API.</p>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">Build reusable outfit combinations from persisted wardrobe pieces.</p>
       </div>
       <Card className="p-6">
-        <form action="/dashboard/outfits" className="grid gap-5 md:grid-cols-2">
+        <form action={action} className="grid gap-5 md:grid-cols-2">
           <label className="block text-sm font-medium text-charcoal">
             Outfit name
             <Input className="mt-2" name="name" defaultValue={outfit?.name} required />
@@ -38,8 +47,11 @@ export function OutfitEditor({ outfit, wardrobeItems }: { outfit?: Outfit; wardr
             Notes
             <Textarea className="mt-2" name="notes" defaultValue={outfit?.notes} />
           </label>
+          {state.status === "error" ? (
+            <p className="text-sm font-medium text-red-700 md:col-span-2" role="alert">{state.message}</p>
+          ) : null}
           <div className="flex flex-col gap-3 sm:flex-row md:col-span-2">
-            <Button type="submit">{outfit ? "Save outfit" : "Create outfit"}</Button>
+            <Button type="submit" disabled={pending}>{pending ? "Saving..." : outfit ? "Save outfit" : "Create outfit"}</Button>
             <Link href="/dashboard/outfits" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-charcoal hover:bg-ivory-100">
               Cancel
             </Link>
@@ -49,4 +61,3 @@ export function OutfitEditor({ outfit, wardrobeItems }: { outfit?: Outfit; wardr
     </div>
   );
 }
-

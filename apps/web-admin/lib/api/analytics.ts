@@ -1,7 +1,7 @@
-import { mockWardrobeAnalytics } from "@/lib/mock/analytics";
+import { apiGet } from "@/lib/api/client";
 import type { WardrobeAnalytics } from "@/types/analytics";
 
 export async function getWardrobeAnalytics(): Promise<WardrobeAnalytics> {
-  // TODO: Replace mock adapter with GET /analytics/wardrobe, /analytics/usage, and /analytics/cost-per-wear once implemented.
-  return mockWardrobeAnalytics;
+  const result = await apiGet<WardrobeAnalytics>("/analytics/wardrobe");
+  return result.data ?? { metrics: [], categoryBreakdown: [], usageBreakdown: [], colorBreakdown: [] };
 }
