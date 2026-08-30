@@ -6,6 +6,15 @@ cd "$ROOT_DIR"
 
 MODE="${1:-all}"
 AI_MODEL_PATH="${CLOSIRA_MODEL_PATH:-services/ai/models/closira-baseline.json}"
+LOCAL_DATABASE_URL="${DATABASE_URL:-postgresql://closira:closira@localhost:5432/closira}"
+LOCAL_REDIS_URL="${REDIS_URL:-redis://localhost:6379}"
+LOCAL_AI_SERVICE_URL="${AI_SERVICE_URL:-http://127.0.0.1:8000}"
+LOCAL_AI_PROVIDER="${CLOSIRA_FORCE_AI_PROVIDER:-OLLAMA}"
+LOCAL_OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-http://localhost:11434}"
+LOCAL_OLLAMA_MODEL="${OLLAMA_MODEL:-llama3:8b}"
+LOCAL_OLLAMA_EMBEDDING_MODEL="${OLLAMA_EMBEDDING_MODEL:-nomic-embed-text:latest}"
+LOCAL_OLLAMA_FREE="${CLOSIRA_ALLOW_LOCAL_OLLAMA_ON_FREE:-true}"
+LOCAL_STORAGE_PROVIDER="${CLOSIRA_STORAGE_PROVIDER:-LOCAL}"
 
 print_step() {
   printf "\n\033[1;36m==>\033[0m %s\n" "$1"
@@ -130,7 +139,7 @@ case "$MODE" in
   api)
     require_command npm
     require_port_free 3001 "API"
-    npm --workspace services/api run start
+    DATABASE_URL="$LOCAL_DATABASE_URL" REDIS_URL="$LOCAL_REDIS_URL" AI_SERVICE_URL="$LOCAL_AI_SERVICE_URL" STORAGE_PROVIDER="$LOCAL_STORAGE_PROVIDER" CLOSIRA_FORCE_AI_PROVIDER="$LOCAL_AI_PROVIDER" CLOSIRA_ALLOW_LOCAL_OLLAMA_ON_FREE="$LOCAL_OLLAMA_FREE" OLLAMA_BASE_URL="$LOCAL_OLLAMA_BASE_URL" OLLAMA_MODEL="$LOCAL_OLLAMA_MODEL" OLLAMA_EMBEDDING_MODEL="$LOCAL_OLLAMA_EMBEDDING_MODEL" npm --workspace services/api run start
     ;;
   ai)
     require_command python3
@@ -149,7 +158,7 @@ case "$MODE" in
     if [[ ! -f "$AI_MODEL_PATH" ]]; then
       print_warn "AI model not found at $AI_MODEL_PATH. Run ./setup.sh first or set CLOSIRA_MODEL_PATH."
     fi
-    start_process "API" npm --workspace services/api run start
+    start_process "API" env DATABASE_URL="$LOCAL_DATABASE_URL" REDIS_URL="$LOCAL_REDIS_URL" AI_SERVICE_URL="$LOCAL_AI_SERVICE_URL" STORAGE_PROVIDER="$LOCAL_STORAGE_PROVIDER" CLOSIRA_FORCE_AI_PROVIDER="$LOCAL_AI_PROVIDER" CLOSIRA_ALLOW_LOCAL_OLLAMA_ON_FREE="$LOCAL_OLLAMA_FREE" OLLAMA_BASE_URL="$LOCAL_OLLAMA_BASE_URL" OLLAMA_MODEL="$LOCAL_OLLAMA_MODEL" OLLAMA_EMBEDDING_MODEL="$LOCAL_OLLAMA_EMBEDDING_MODEL" npm --workspace services/api run start
     start_process "AI service" env CLOSIRA_MODEL_PATH="$AI_MODEL_PATH" PYTHONPATH=services/ai python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8000
     start_process "web app" npm --workspace apps/web-admin run dev
     print_step "Services started"

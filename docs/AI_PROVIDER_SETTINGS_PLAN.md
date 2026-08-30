@@ -1,6 +1,6 @@
 # AI Provider Settings Plan
 
-Last updated: 2026-08-25
+Last updated: 2026-08-30
 
 ## Goal
 
@@ -51,17 +51,36 @@ Built:
   - Azure OpenAI
   - Ollama
   - Custom OpenAI-compatible API
+- Provider-backed API execution:
+  - styling recommendations call the active LLM provider for JSON output
+  - shopping checks call the active LLM provider for JSON output
+  - clothing image analysis sends the wardrobe image to the active vision-capable provider
+  - native AI remains the fallback path
+
+## Runtime Provider Environment
+
+Until encrypted user-secret storage is implemented, configure provider keys in staging/prod environment variables:
+
+- `OPENAI_API_KEY`
+- `ANTHROPIC_API_KEY`
+- `GEMINI_API_KEY`
+- `AZURE_OPENAI_API_KEY`
+- `AZURE_OPENAI_CHAT_COMPLETIONS_URL`
+- `CUSTOM_AI_API_KEY`
+- `CUSTOM_AI_BASE_URL`
+
+Ollama uses `baseUrl` from settings or defaults to `http://localhost:11434`.
 
 ## Important Limitation
 
-The current provider settings flow is a real UI and API contract, but credentials are not persisted securely yet. Hosted model SDK calls are not wired yet. The current native AI behavior uses a tiny local baseline model when available and deterministic fallback behavior otherwise. It is suitable as an integration scaffold, not as production AI quality.
+The current provider settings flow is a real UI and API contract, and hosted LLM HTTP calls are wired for text styling, shopping checks, and clothing image analysis. Credentials are not persisted securely yet; user-entered keys are masked only, so production should rely on environment-backed provider secrets until encryption is implemented. The current native AI behavior uses a tiny local baseline model when available and deterministic fallback behavior otherwise. It is suitable as an integration layer, not as production stylist-model quality.
 
 ## Required Backend Work
 
-- Add database table for encrypted AI provider settings.
-- Store API keys server-side only.
-- Add provider health checks.
-- Add per-provider request adapters.
+- Replace masked key storage with real encryption/decryption for AI provider settings.
+- Store API keys server-side only, never in browser-readable state.
+- Add provider health checks and capability checks.
+- Harden per-provider request adapters.
 - Add timeout, retry, and rate-limit handling.
 - Add fallback chain:
   1. selected custom provider

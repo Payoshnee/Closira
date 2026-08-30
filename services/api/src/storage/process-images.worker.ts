@@ -7,16 +7,14 @@ const imageProcessing = new ImageProcessingService(new StorageService());
 
 async function main() {
   const batchSize = Number(process.env.IMAGE_PROCESSING_BATCH_SIZE ?? 25);
-  const pending = await prisma.wardrobeImage.findMany({
-    where: {
-      analysis: {
-        path: ["processedAt"],
-        equals: undefined
-      }
-    },
+  const candidates = await prisma.wardrobeImage.findMany({
     orderBy: { createdAt: "asc" },
-    take: batchSize
+    take: batchSize * 3
   });
+  const pending = candidates.filter((image) => {
+    const analysis = jsonObject(image.analysis);
+    return !analysis.processedAt && !analysis.processingFailedAt;
+  }).slice(0, batchSize);
 
   for (const image of pending) {
     try {
@@ -31,7 +29,7 @@ async function main() {
           width: processed.variants.detail.width,
           height: processed.variants.detail.height,
           analysis: {
-            ...(typeof image.analysis === "object" && image.analysis && !Array.isArray(image.analysis) ? image.analysis : {}),
+            ...jsonObject(image.analysis),
             processedAt: new Date().toISOString(),
             originalStorageKey: image.storageKey,
             original: processed.original,
@@ -45,7 +43,7 @@ async function main() {
         where: { id: image.id },
         data: {
           analysis: {
-            ...(typeof image.analysis === "object" && image.analysis && !Array.isArray(image.analysis) ? image.analysis : {}),
+            ...jsonObject(image.analysis),
             processingFailedAt: new Date().toISOString(),
             processingError: error instanceof Error ? error.message : "Unknown image processing error"
           }
@@ -66,3 +64,7 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+function jsonObject(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}

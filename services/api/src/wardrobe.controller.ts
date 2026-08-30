@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from "@nestjs/common";
-import { Prisma, StorageProvider } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import type { Request } from "express";
 import { AuthService } from "./auth/auth.service";
 import { EntitlementsService } from "./billing/entitlements.service";

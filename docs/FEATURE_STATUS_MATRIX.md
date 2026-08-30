@@ -1,6 +1,6 @@
 # Closira Feature Status Matrix
 
-Last updated: 2026-08-29
+Last updated: 2026-08-30
 
 Status key:
 
@@ -47,7 +47,7 @@ Status key:
 | Wardrobe | Favorite toggle | Real | Backend and frontend action exist. | Needs tests. | Add tests. |
 | Wardrobe | Mark-worn flow | Real | Backend and frontend action exist; usage logs update. | Needs richer history UX. | Usage timeline and tests. |
 | Wardrobe | Search/filter/sort/pagination | Real | Backend query support and frontend filters exist. | Needs performance checks on large data. | Index review and load tests. |
-| Wardrobe | Image processing | Partial | Finalize step reads local or S3-compatible objects, validates dimensions, strips metadata through re-encoding, generates thumbnail/card/detail WebP variants, stores metadata, and keeps original archived. | Processing is synchronous during finalize, not yet queued in a background worker. | Move processing to a queue/worker for high-volume production. |
+| Wardrobe | Image processing | Partial | Finalize step reads local or S3-compatible objects, validates dimensions, strips metadata through re-encoding, generates thumbnail/card/detail WebP variants, stores metadata, keeps original archived, and a `worker:images` batch command exists. | Worker is batch/scheduled-command style, not a durable queue with retries/dead-lettering. | Deploy/schedule worker in staging/prod or replace with BullMQ/SQS-style queue for high-volume production. |
 | Outfits | Outfit CRUD | Real | Backend outfit endpoints and frontend pages exist. | Needs tests. | API/e2e tests. |
 | Outfits | Outfit item slots | Real | Outfit slots exist in schema/API/UI. | Needs richer drag/drop builder if desired. | Better builder UX. |
 | Outfits | Outfit duplication | Real | Backend duplicate endpoint and frontend action exist. | Needs tests. | Add tests. |
@@ -58,15 +58,15 @@ Status key:
 | Calendar | Reminders | Not Built | Reminder fields/planning exist conceptually. | No notification service. | Email/push reminder scheduler. |
 | Analytics | Wardrobe analytics endpoint | Partial | API route and dashboard route exist. | Needs deeper source definitions and test coverage. | Cost-per-wear, unused reports, time filters, exports. |
 | Analytics | Dashboard metrics UI | Real | Metric cards and visual lists exist. | Data quality needs validation. | Caveats/source definitions and tests. |
-| AI | AI settings UI | Partial | User can choose Native/OpenAI/Claude/Gemini/Azure/Ollama/custom provider options. | Keys need encryption/masking/connection testing hardening. | Encrypt keys, test connection, disconnect, capability badges. |
+| AI | AI settings UI | Partial | User can choose Native/OpenAI/Claude/Gemini/Azure/Ollama/custom provider options and route API calls through the active provider. | User-entered keys are masked only; production calls should use env-backed keys until encryption is implemented. | Encrypt keys, test connection, disconnect, capability badges. |
 | AI | Native AI service | Mock/Fallback | FastAPI service and trainable baseline exist. | Tiny sample model; not stylist-quality production AI. | Dataset, real model, eval pipeline. |
-| AI | Clothing image analysis | Mock/Fallback | Endpoint exists and returns structured result. | Not real vision analysis. | Vision model integration, image ingestion, confidence tests. |
+| AI | Clothing image analysis | Partial | Endpoint now uses the active provider for real multimodal image analysis when OpenAI/Azure/custom, Anthropic, Gemini, or Ollama vision credentials/models are configured, then falls back to native baseline. | Native model remains baseline quality; provider keys are env-backed, not securely persisted user secrets yet. | Provider health checks, encrypted user keys, confidence tests, and image-analysis evaluation set. |
 | AI | Auto-tagging | Partial | Analysis response can suggest tags and API can apply tags. | Needs review/confirmation flow and model quality. | Confirmation UI and better model. |
 | AI | Image embeddings | Partial | Runtime endpoint returns 768-dim vectors; offline OpenCLIP embedding builder exists; deterministic 768-dim fallback remains for dev. | Production OpenCLIP/container deployment and image backfill still required. | Deploy embedding model, backfill wardrobe images, ranking tests. |
 | AI | pgvector similarity search | Partial | Database table/index exists and API path has similarity search support. | Quality depends on real embeddings. | Real embeddings, ranking tests, UX surfacing. |
 | AI | Outfit recommendation endpoint | Partial | API/job flow exists and answers prompts using wardrobe data/provider path. | Native model is baseline/fallback quality. | Production stylist model, feedback loop, eval set. |
 | AI | Shopping-check endpoint | Partial | API/job flow exists. | Native logic is deterministic/fallback quality. | Real image upload, similarity scoring, buy/skip evaluation. |
-| AI | Provider adapters | Partial | Provider settings and HTTP execution paths exist for major providers. | Needs encrypted credentials, health checks, retries, cost/capability tracking. | Harden per-provider adapters and tests. |
+| AI | Provider adapters | Partial | Provider settings and HTTP execution paths exist for text styling, shopping checks, and multimodal clothing analysis across OpenAI/Azure/custom-compatible, Anthropic, Gemini, and Ollama. | Needs encrypted credentials, health checks, retries, cost/capability tracking, and provider-specific integration tests. | Harden per-provider adapters and tests. |
 | AI | Confidence/fallback pipeline | Real | API-level confidence and fallback job status exist. | Needs model-level calibration. | Confidence calibration against eval data. |
 | AI | Training dataset | Partial | Licensed dataset collection script, source policy, manifest normalizer, and split script exist. | Real licensed image corpus is not collected yet. | Acquire/label commercial-safe dataset and run QA. |
 | AI | Virtual try-on | Not Built | Endpoint returns `not_available`. | No real try-on model. | Consent flow, segmentation, pose/garment model, result storage/deletion. |

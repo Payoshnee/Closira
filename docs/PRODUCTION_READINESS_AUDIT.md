@@ -1,6 +1,6 @@
 # Closira Production Readiness Audit
 
-Last updated: 2026-08-29
+Last updated: 2026-08-30
 
 ## Current Summary
 
@@ -29,20 +29,20 @@ Current limitation:
 
 - The native AI model is a tiny baseline, not a production stylist model.
 - Embeddings now return 768 dimensions from the AI service, with optional OpenCLIP support and a deterministic dev fallback.
-- Clothing image analysis is not using a real vision model yet.
+- Clothing image analysis now routes to the active external LLM provider when a vision-capable provider is configured, then falls back to the native baseline service.
 - Virtual try-on returns `not_available`.
-- Provider settings exist, but API keys still need encryption and provider health checks.
-- External provider calls exist in the API path, but need hardened provider-specific contracts, retries, cost tracking, capability checks, and integration tests.
+- Provider settings exist, but user-supplied API keys are not securely encrypted yet. Production calls should use environment-backed provider keys until encryption lands.
+- External provider calls exist in the API path for styling, shopping checks, and clothing image analysis, but need hardened provider-specific contracts, retries, cost tracking, capability checks, and integration tests.
 
 AI left:
 
 - Collect the real licensed production image corpus.
 - Label and QA the production dataset.
-- Real fashion image classifier or vision-language model strategy.
+- Real fashion image classifier or native vision-language model strategy.
 - Runtime embeddings aligned to the `vector(768)` database design, with optional OpenCLIP generation and a local deterministic fallback.
 - Background AI job queue with retries.
 - Provider key encryption and masked connected-state UI.
-- Provider health checks.
+- Provider health checks and staging credential verification.
 - Real auto-tag confirmation workflow.
 - Similarity quality evaluation.
 - Stylist feedback loop and recommendation evaluation set.
@@ -189,7 +189,7 @@ Done:
 Left:
 
 - Production S3/R2 bucket verification.
-- Queued image processing worker for high-volume production.
+- Deploy/schedule the image processing worker or replace it with a durable queue for high-volume production.
 - Additional image e2e tests.
 - Malware/content scanning if public uploads are allowed.
 

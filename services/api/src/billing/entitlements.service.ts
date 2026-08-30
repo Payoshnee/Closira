@@ -52,6 +52,7 @@ export class EntitlementsService {
   }
 
   async requireAiRequest(userId: string) {
+    if (process.env.CLOSIRA_FORCE_AI_PROVIDER === "OLLAMA" && process.env.CLOSIRA_ALLOW_LOCAL_OLLAMA_ON_FREE !== "false") return;
     const { limits } = await this.current(userId);
     const limit = numberLimit(limits.aiRequestsPerMonth);
     const used = await this.prisma.aiJob.count({
@@ -67,6 +68,7 @@ export class EntitlementsService {
 
   async requireProvider(userId: string, provider: AiProviderType) {
     if (provider === "NATIVE") return;
+    if (provider === "OLLAMA" && process.env.CLOSIRA_ALLOW_LOCAL_OLLAMA_ON_FREE !== "false") return;
     const { limits } = await this.current(userId);
     if (limits.customProviders !== true) {
       throw new ForbiddenException("Custom AI providers require a paid plan.");

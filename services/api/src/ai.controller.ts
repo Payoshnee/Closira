@@ -5,6 +5,7 @@ import { AuthService } from "./auth/auth.service";
 import { EntitlementsService } from "./billing/entitlements.service";
 import { requireCurrentUser } from "./auth/current-user";
 import { PrismaService } from "./prisma.service";
+import { StorageService } from "./storage/storage.service";
 import { itemInclude, toWardrobeItem } from "./wardrobe.mapper";
 
 type WebProvider = "native" | "openai" | "anthropic" | "gemini" | "azure-openai" | "ollama" | "custom";
@@ -31,18 +32,23 @@ export class AiController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auth: AuthService,
-    private readonly entitlements: EntitlementsService
+    private readonly entitlements: EntitlementsService,
+    private readonly storage: StorageService
   ) {}
 
   @Get("settings")
   async getSettings(@Req() request: Request): Promise<AiProviderSettings> {
     const user = requireCurrentUser(request, this.auth);
+    const forcedProvider = forcedAiProvider();
     const settings = await this.prisma.aiProviderSetting.findMany({ where: { userId: user.id } });
     const active = settings.find((setting) => setting.isDefault && setting.isEnabled) ?? settings.find((setting) => setting.isEnabled);
     return {
-      activeProvider: toWebProvider(active?.provider ?? "NATIVE"),
+      activeProvider: toWebProvider(forcedProvider ?? active?.provider ?? "NATIVE"),
       nativeEnabled: settings.some((setting) => setting.provider === "NATIVE" && setting.isEnabled) || settings.length === 0,
-      connectedProviders: settings.filter((setting) => setting.isEnabled).map((setting) => toWebProvider(setting.provider)),
+      connectedProviders: Array.from(new Set([
+        ...settings.filter((setting) => setting.isEnabled).map((setting) => toWebProvider(setting.provider)),
+        ...(forcedProvider ? [toWebProvider(forcedProvider)] : [])
+      ])),
       supportedProviders
     };
   }
@@ -115,6 +121,9 @@ export class AiController {
 
   @Get("recommendations")
   async listRecommendations(@Req() request: Request) {
+    const user = requireCurrentUser(request, this.auth);
+    const provider = await this.activeProvider(user.id);
+    const wardrobe = await this.userWardrobe(user.id);
     const prompts = [
       "Create a polished dinner outfit using items I have not worn recently.",
       "Style me for an office presentation with a clean, elegant, confident look.",
@@ -122,7 +131,7 @@ export class AiController {
       "Build a comfortable travel outfit that still looks put together.",
       "Give me a minimalist capsule outfit using neutral colors and reusable pieces."
     ];
-    return Promise.all(prompts.map((prompt) => this.recommendOutfit(request, { prompt })));
+    return prompts.map((prompt, index) => this.localStylistFallback(`suggested-${index + 1}`, { prompt }, wardrobe, provider.provider));
   }
 
   @Post("shopping-check")
@@ -168,18 +177,26 @@ export class AiController {
   async analyzeItem(@Req() request: Request, @Param("itemId") itemId: string) {
     const user = requireCurrentUser(request, this.auth);
     await this.entitlements.requireAiRequest(user.id);
+    const provider = await this.activeProvider(user.id);
+    await this.entitlements.requireProvider(user.id, provider.provider);
     const item = await this.prisma.wardrobeItem.findFirstOrThrow({ where: { id: itemId, userId: user.id }, include: itemInclude });
-    const job = await this.createJob(user.id, "NATIVE", "CLOTHING_ANALYSIS", { itemId });
-    const analysis = await postJson(`${aiServiceUrl()}/analyze-clothing`, {
-      item_name: item.name,
-      notes: [item.color, item.material, item.pattern, item.brand].filter(Boolean).join(" ")
-    });
+    const image = item.images.find((candidate) => candidate.isPrimary) ?? item.images[0];
+    const job = await this.createJob(user.id, provider.provider, "CLOTHING_ANALYSIS", { itemId, imageId: image?.id });
+    let analysis: Record<string, unknown>;
+    let fallbackUsed = false;
+    try {
+      analysis = normalizeClothingAnalysis(await this.callProviderClothingAnalysis(provider, item, image));
+    } catch (error) {
+      analysis = normalizeClothingAnalysis(await this.callNativeClothingAnalysis(item));
+      analysis.provider_error = error instanceof Error ? error.message : "External AI provider failed.";
+      fallbackUsed = true;
+    }
     await this.prisma.wardrobeImage.updateMany({
       where: { itemId: item.id, isPrimary: true },
       data: { analysis: analysis as Prisma.InputJsonValue }
     });
     await this.applyAutoTags(user.id, item.id, analysis.suggested_tags);
-    await this.finishJob(job.id, analysis, Number(analysis.confidence ?? 0), Boolean(analysis.fallback_used));
+    await this.finishJob(job.id, analysis, Number(analysis.confidence ?? 0), fallbackUsed || Boolean(analysis.fallback_used));
     return analysis;
   }
 
@@ -187,9 +204,12 @@ export class AiController {
   async embedItem(@Req() request: Request, @Param("itemId") itemId: string) {
     const user = requireCurrentUser(request, this.auth);
     await this.entitlements.requireAiRequest(user.id);
+    const provider = await this.activeProvider(user.id);
     const item = await this.prisma.wardrobeItem.findFirstOrThrow({ where: { id: itemId, userId: user.id }, include: { images: true } });
-    const job = await this.createJob(user.id, "NATIVE", "IMAGE_EMBEDDING", { itemId });
-    const result = await postJson(`${aiServiceUrl()}/embed-image`, { item_name: item.name, image_url: item.images[0]?.url });
+    const job = await this.createJob(user.id, provider.provider, "IMAGE_EMBEDDING", { itemId });
+    const result = provider.provider === "OLLAMA"
+      ? await this.callOllamaEmbedding(provider, item)
+      : await postJson(`${aiServiceUrl()}/embed-image`, { item_name: item.name, image_url: item.images[0]?.url });
     const vector = normalizeEmbedding(result.embedding as number[]);
     await this.prisma.$executeRawUnsafe(
       `INSERT INTO image_embeddings (item_id, image_id, model, dimension, embedding) VALUES ($1::uuid, $2::uuid, $3, 768, $4::vector)`,
@@ -234,6 +254,28 @@ export class AiController {
   }
 
   private async activeProvider(userId: string) {
+    const forcedProvider = forcedAiProvider();
+    if (forcedProvider) {
+      return this.prisma.aiProviderSetting.upsert({
+        where: { userId_provider: { userId, provider: forcedProvider } },
+        update: {
+          isEnabled: true,
+          isDefault: true,
+          model: forcedProvider === "OLLAMA" ? process.env.OLLAMA_MODEL ?? "llama3:8b" : undefined,
+          baseUrl: forcedProvider === "OLLAMA" ? process.env.OLLAMA_BASE_URL ?? "http://localhost:11434" : undefined
+        },
+        create: {
+          userId,
+          provider: forcedProvider,
+          displayName: supportedProviders.find((item) => item.id === toWebProvider(forcedProvider))?.name ?? forcedProvider,
+          isEnabled: true,
+          isDefault: true,
+          model: forcedProvider === "OLLAMA" ? process.env.OLLAMA_MODEL ?? "llama3:8b" : undefined,
+          baseUrl: forcedProvider === "OLLAMA" ? process.env.OLLAMA_BASE_URL ?? "http://localhost:11434" : undefined
+        }
+      });
+    }
+
     const setting =
       (await this.prisma.aiProviderSetting.findFirst({ where: { userId, isDefault: true, isEnabled: true } })) ??
       (await this.prisma.aiProviderSetting.upsert({
@@ -289,6 +331,34 @@ export class AiController {
     });
   }
 
+  private async callProviderClothingAnalysis(
+    provider: Awaited<ReturnType<AiController["activeProvider"]>>,
+    item: Prisma.WardrobeItemGetPayload<{ include: typeof itemInclude }>,
+    image?: Prisma.WardrobeImageGetPayload<object>
+  ) {
+    if (provider.provider === "NATIVE") {
+      return this.callNativeClothingAnalysis(item);
+    }
+
+    if (!image) {
+      return this.callExternalTextProvider(provider, clothingAnalysisPrompt(item));
+    }
+
+    const source = await this.storage.readObjectBuffer(image.storageKey, image.provider);
+    const imagePayload = {
+      base64: source.toString("base64"),
+      mediaType: image.contentType || "image/jpeg"
+    };
+    return this.callExternalVisionProvider(provider, clothingAnalysisPrompt(item), imagePayload);
+  }
+
+  private async callNativeClothingAnalysis(item: Prisma.WardrobeItemGetPayload<{ include: typeof itemInclude }>) {
+    return postJson(`${aiServiceUrl()}/analyze-clothing`, {
+      item_name: item.name,
+      notes: [item.color, item.material, item.pattern, item.brand].filter(Boolean).join(" ")
+    });
+  }
+
   private async callExternalTextProvider(provider: Awaited<ReturnType<AiController["activeProvider"]>>, prompt: string) {
     const config = provider.config as { apiKeyEnv?: string } | null;
     const apiKey = config?.apiKeyEnv ? process.env[config.apiKeyEnv] : apiKeyFor(provider.provider);
@@ -335,6 +405,101 @@ export class AiController {
     }
 
     throw new Error(`Provider ${provider.provider} is not supported.`);
+  }
+
+  private async callOllamaEmbedding(provider: Awaited<ReturnType<AiController["activeProvider"]>>, item: Prisma.WardrobeItemGetPayload<{ include: { images: true } }>) {
+    const baseUrl = provider.baseUrl ?? defaultBaseUrlFor("OLLAMA");
+    const model = process.env.OLLAMA_EMBEDDING_MODEL ?? "nomic-embed-text:latest";
+    const prompt = [
+      item.name,
+      item.color,
+      item.material,
+      item.pattern,
+      item.brand,
+      item.notes
+    ].filter(Boolean).join(" ");
+    const response = await postJsonWithHeaders(`${baseUrl.replace(/\/$/, "")}/api/embeddings`, {
+      model,
+      prompt: prompt || "wardrobe item"
+    }, {});
+    return {
+      embedding: Array.isArray(response.embedding) ? response.embedding : [],
+      dimensions: 768,
+      model,
+      fallback_used: false
+    };
+  }
+
+  private async callExternalVisionProvider(
+    provider: Awaited<ReturnType<AiController["activeProvider"]>>,
+    prompt: string,
+    image: { base64: string; mediaType: string }
+  ) {
+    const config = provider.config as { apiKeyEnv?: string } | null;
+    const apiKey = config?.apiKeyEnv ? process.env[config.apiKeyEnv] : apiKeyFor(provider.provider);
+    const model = provider.model ?? defaultVisionModelFor(provider.provider);
+    const baseUrl = provider.baseUrl ?? defaultBaseUrlFor(provider.provider);
+    const dataUrl = `data:${image.mediaType};base64,${image.base64}`;
+
+    if (!apiKey && provider.provider !== "OLLAMA") {
+      throw new Error(`${provider.provider} API key is not configured in environment.`);
+    }
+
+    if (provider.provider === "OPENAI" || provider.provider === "AZURE_OPENAI" || provider.provider === "CUSTOM") {
+      const url = provider.provider === "AZURE_OPENAI" ? baseUrl : `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+      const response = await postJsonWithHeaders(url, {
+        model,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: prompt },
+              { type: "image_url", image_url: { url: dataUrl } }
+            ]
+          }
+        ],
+        response_format: { type: "json_object" }
+      }, { Authorization: `Bearer ${apiKey}` });
+      return parseAiJson(choiceText(response));
+    }
+
+    if (provider.provider === "ANTHROPIC") {
+      const response = await postJsonWithHeaders(`${baseUrl.replace(/\/$/, "")}/v1/messages`, {
+        model,
+        max_tokens: 900,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "image", source: { type: "base64", media_type: image.mediaType, data: image.base64 } },
+              { type: "text", text: prompt }
+            ]
+          }
+        ]
+      }, { "x-api-key": apiKey ?? "", "anthropic-version": "2023-06-01" });
+      return parseAiJson(anthropicText(response));
+    }
+
+    if (provider.provider === "GEMINI") {
+      const url = `${baseUrl.replace(/\/$/, "")}/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const response = await postJsonWithHeaders(url, {
+        contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: image.mediaType, data: image.base64 } }] }]
+      }, {});
+      return parseAiJson(geminiText(response));
+    }
+
+    if (provider.provider === "OLLAMA") {
+      const response = await postJsonWithHeaders(`${baseUrl.replace(/\/$/, "")}/api/generate`, {
+        model,
+        prompt,
+        images: [image.base64],
+        stream: false,
+        format: "json"
+      }, {});
+      return parseAiJson(typeof response.response === "string" ? response.response : "{}");
+    }
+
+    throw new Error(`Provider ${provider.provider} does not support clothing image analysis.`);
   }
 
   private async createJob(userId: string, provider: AiProviderType, type: AiJobType, input: Prisma.InputJsonValue) {
@@ -460,6 +625,12 @@ function toWebProvider(provider: AiProviderType): WebProvider {
   return map[provider];
 }
 
+function forcedAiProvider() {
+  const value = process.env.CLOSIRA_FORCE_AI_PROVIDER?.trim().toLowerCase();
+  if (!value) return undefined;
+  return toDbProvider(value as WebProvider);
+}
+
 function maskSecret(secret: string) {
   return `configured:${secret.slice(0, 4)}...${secret.slice(-4)}`;
 }
@@ -483,7 +654,20 @@ function defaultModelFor(provider: AiProviderType) {
     ANTHROPIC: "claude-3-5-sonnet-latest",
     GEMINI: "gemini-1.5-pro",
     AZURE_OPENAI: "gpt-4o-mini",
-    OLLAMA: "llama3.1",
+    OLLAMA: process.env.OLLAMA_MODEL ?? "llama3:8b",
+    CUSTOM: "gpt-4o-mini"
+  };
+  return modelByProvider[provider];
+}
+
+function defaultVisionModelFor(provider: AiProviderType) {
+  const modelByProvider: Record<AiProviderType, string> = {
+    NATIVE: "closira-baseline",
+    OPENAI: "gpt-4o-mini",
+    ANTHROPIC: "claude-3-5-sonnet-latest",
+    GEMINI: "gemini-1.5-pro",
+    AZURE_OPENAI: "gpt-4o-mini",
+    OLLAMA: process.env.OLLAMA_VISION_MODEL ?? process.env.OLLAMA_MODEL ?? "llava",
     CUSTOM: "gpt-4o-mini"
   };
   return modelByProvider[provider];
@@ -496,7 +680,7 @@ function defaultBaseUrlFor(provider: AiProviderType) {
     ANTHROPIC: "https://api.anthropic.com",
     GEMINI: "https://generativelanguage.googleapis.com",
     AZURE_OPENAI: process.env.AZURE_OPENAI_CHAT_COMPLETIONS_URL ?? "",
-    OLLAMA: "http://localhost:11434",
+    OLLAMA: process.env.OLLAMA_BASE_URL ?? "http://localhost:11434",
     CUSTOM: process.env.CUSTOM_AI_BASE_URL ?? "https://api.openai.com/v1"
   };
   return urlByProvider[provider];
@@ -547,6 +731,20 @@ function shoppingPrompt(itemName: string, occasion: string | undefined, wardrobe
     itemName,
     occasion,
     wardrobeItems
+  });
+}
+
+function clothingAnalysisPrompt(item: Prisma.WardrobeItemGetPayload<{ include: typeof itemInclude }>) {
+  return JSON.stringify({
+    instruction: "You are Closira clothing image analyst. Analyze the wardrobe item image and return only JSON with detected_category, detected_colors, suggested_tags, material, pattern, style_notes, confidence. suggested_tags must be short lowercase wardrobe tags. Do not invent personal traits or sensitive attributes.",
+    item: {
+      name: item.name,
+      color: item.color,
+      material: item.material,
+      pattern: item.pattern,
+      brand: item.brand,
+      notes: item.notes
+    }
   });
 }
 
@@ -602,5 +800,21 @@ function normalizeShopping(payload: Record<string, unknown>) {
     similar_items: Array.isArray(payload.similar_items) ? payload.similar_items : [],
     explanation: typeof payload.explanation === "string" ? payload.explanation : "AI shopping check generated from wardrobe metadata.",
     fallback_used: Boolean(payload.fallback_used)
+  };
+}
+
+function normalizeClothingAnalysis(payload: Record<string, unknown>) {
+  const colors = Array.isArray(payload.detected_colors) ? payload.detected_colors.filter((color): color is string => typeof color === "string") : [];
+  const tags = Array.isArray(payload.suggested_tags) ? payload.suggested_tags.filter((tag): tag is string => typeof tag === "string") : [];
+  return {
+    detected_category: typeof payload.detected_category === "string" ? payload.detected_category : "Wardrobe",
+    detected_colors: colors.length ? colors : ["unknown"],
+    suggested_tags: tags,
+    material: typeof payload.material === "string" ? payload.material : undefined,
+    pattern: typeof payload.pattern === "string" ? payload.pattern : undefined,
+    style_notes: typeof payload.style_notes === "string" ? payload.style_notes : undefined,
+    confidence: typeof payload.confidence === "number" ? payload.confidence : 0.5,
+    fallback_used: Boolean(payload.fallback_used),
+    model: typeof payload.model === "string" ? payload.model : undefined
   };
 }

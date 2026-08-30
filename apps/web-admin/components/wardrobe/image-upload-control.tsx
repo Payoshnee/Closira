@@ -37,7 +37,7 @@ export function ImageUploadControl({ itemId }: { itemId: string }) {
 
       const signed = (await prepareResponse.json()) as WardrobeUploadUrl;
       setStatus("Uploading image...");
-      await uploadWithProgress(signed.uploadUrl, signed.headers, file, setProgress);
+      await uploadWithProgress(resolveUploadUrl(signed.uploadUrl), signed.headers, file, setProgress);
       setStatus("Processing image...");
       const completeResponse = await fetch(`/api/wardrobe/items/${itemId}/images/${signed.imageId}/complete`, {
         method: "POST",
@@ -130,4 +130,10 @@ function uploadWithProgress(url: string, headers: Record<string, string>, file: 
     request.onerror = () => reject(new Error("Upload failed. Check your connection and try again."));
     request.send(file);
   });
+}
+
+function resolveUploadUrl(url: string) {
+  if (/^https?:\/\//i.test(url)) return url;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api/v1";
+  return `${new URL(apiUrl).origin}${url}`;
 }
