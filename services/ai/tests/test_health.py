@@ -26,4 +26,6 @@ def test_embed_image() -> None:
     response = client.post("/embed-image", json={"item_name": "Ivory linen blazer"})
 
     assert response.status_code == 200
-    assert response.json()["dimensions"] == 16
+    body = response.json()
+    assert body["dimensions"] == 768
+    assert len(body["embedding"]) == 768

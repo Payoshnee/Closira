@@ -1,30 +1,53 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:closira_mobile/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:closira_mobile/main.dart';
-
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('renders Closira auth and opens the mobile dashboard', (
+    tester,
+  ) async {
+    final state = ClosiraMobileState()..isLoadingSession = false;
+    await tester.pumpWidget(ClosiraMobileApp(initialState: state));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.text('Closira'), findsOneWidget);
+    expect(find.text('Sign in'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    await tester.drag(find.byType(ListView), const Offset(0, -300));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Use offline demo'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dashboard'), findsOneWidget);
+    expect(find.text('Wardrobe'), findsWidgets);
+    expect(find.text('AI'), findsWidgets);
+  });
+
+  testWidgets('wardrobe tab supports adding a mobile item', (tester) async {
+    final state = ClosiraMobileState()..isLoadingSession = false;
+    await tester.pumpWidget(ClosiraMobileApp(initialState: state));
+    await tester.drag(find.byType(ListView), const Offset(0, -300));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Use offline demo'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.checkroom_outlined));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ivory linen blazer'), findsOneWidget);
+
+    state.wardrobe.add(
+      WardrobeItem(
+        id: 'test-mobile-add',
+        name: 'New capsule tee',
+        category: 'Tops',
+        color: 'White',
+        tags: ['capsule'],
+      ),
+    );
     await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(
+      state.wardrobe.any((item) => item.name == 'New capsule tee'),
+      isTrue,
+    );
   });
 }

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { WardrobeImage } from "@/components/wardrobe/wardrobe-image";
 import { duplicateOutfit, toggleOutfitFavorite } from "@/lib/actions/outfits";
 import { getOutfit } from "@/lib/api/outfits";
 
@@ -40,7 +41,12 @@ export default async function OutfitDetailPage({ params }: { params: Promise<{ o
       <div className="grid gap-4 lg:grid-cols-3">
         {outfit.items.map((item) => (
           <Card key={item.id} className="overflow-hidden">
-            <div className={`aspect-[4/5] bg-gradient-to-br ${item.wardrobeItem.images[0]?.gradient ?? "from-ivory-100 to-rose-100"} p-4`} />
+            <WardrobeImage
+              src={item.wardrobeItem.images[0]?.url}
+              alt={item.wardrobeItem.images[0]?.alt ?? item.wardrobeItem.title}
+              gradient={item.wardrobeItem.images[0]?.gradient}
+              className="aspect-[4/5] p-4"
+            />
             <div className="p-4">
               <Badge>{item.slot}</Badge>
               <h2 className="mt-3 font-semibold text-charcoal">{item.wardrobeItem.title}</h2>

@@ -1,20 +1,18 @@
-import { BadRequestException, Controller, Param, Put, Req } from "@nestjs/common";
-import type { Request } from "express";
-import { createWriteStream } from "node:fs";
+import { BadRequestException, Controller, Get, Header, Param, Put, Req, Res } from "@nestjs/common";
+import type { Request, Response } from "express";
+import { createReadStream, createWriteStream } from "node:fs";
 import { mkdir } from "node:fs/promises";
-import { dirname, join, normalize } from "node:path";
+import { dirname } from "node:path";
+import { StorageService } from "./storage/storage.service";
 
 @Controller("uploads")
 export class UploadsController {
+  constructor(private readonly storage: StorageService) {}
+
   @Put("local/:storageKey")
   async uploadLocal(@Param("storageKey") encodedStorageKey: string, @Req() request: Request) {
     const storageKey = decodeURIComponent(encodedStorageKey);
-    const root = normalize(join(process.cwd(), "../../storage/local-dev-only/uploads"));
-    const target = normalize(join(root, storageKey));
-
-    if (!target.startsWith(root)) {
-      throw new BadRequestException("Invalid upload path.");
-    }
+    const target = this.safeLocalPath(storageKey);
 
     await mkdir(dirname(target), { recursive: true });
     await new Promise<void>((resolve, reject) => {
@@ -26,5 +24,24 @@ export class UploadsController {
     });
 
     return { ok: true, storageKey, localPath: target };
+  }
+
+  @Get("local/:storageKey")
+  @Header("Cache-Control", "private, max-age=300")
+  async readLocal(@Param("storageKey") encodedStorageKey: string, @Res() response: Response) {
+    const storageKey = decodeURIComponent(encodedStorageKey);
+    const target = this.safeLocalPath(storageKey);
+
+    createReadStream(target)
+      .on("error", () => response.status(404).json({ message: "File not found." }))
+      .pipe(response);
+  }
+
+  private safeLocalPath(storageKey: string) {
+    try {
+      return this.storage.localPath(storageKey);
+    } catch {
+      throw new BadRequestException("Invalid upload path.");
+    }
   }
 }

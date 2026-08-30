@@ -2,6 +2,7 @@ import { CalendarPlus, Heart } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { WardrobeImage } from "@/components/wardrobe/wardrobe-image";
 import type { Outfit } from "@/types/outfits";
 
 export function OutfitCard({ outfit }: { outfit: Outfit }) {
@@ -10,7 +11,13 @@ export function OutfitCard({ outfit }: { outfit: Outfit }) {
       <Card className="overflow-hidden transition group-hover:-translate-y-0.5 group-hover:shadow-soft">
         <div className="grid aspect-[5/3] grid-cols-3 gap-2 bg-ivory-100 p-3">
           {outfit.items.slice(0, 3).map((item) => (
-            <div key={item.id} className={`rounded-lg bg-gradient-to-br ${item.wardrobeItem.images[0]?.gradient ?? "from-ivory-100 to-rose-100"}`} />
+            <WardrobeImage
+              key={item.id}
+              src={item.wardrobeItem.images[0]?.url}
+              alt={item.wardrobeItem.images[0]?.alt ?? item.wardrobeItem.title}
+              gradient={item.wardrobeItem.images[0]?.gradient}
+              className="rounded-lg"
+            />
           ))}
         </div>
         <div className="p-5">
@@ -31,4 +38,3 @@ export function OutfitCard({ outfit }: { outfit: Outfit }) {
     </Link>
   );
 }
-

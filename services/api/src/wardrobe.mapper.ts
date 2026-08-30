@@ -42,7 +42,8 @@ export function toWardrobeItem(item: ItemWithRelations) {
       imageType: "front",
       alt: image.altText ?? item.name,
       gradient: "from-ivory-100 via-white to-sage/50",
-      url: image.url
+      url: image.url,
+      isPrimary: image.isPrimary
     }))
   };
 }

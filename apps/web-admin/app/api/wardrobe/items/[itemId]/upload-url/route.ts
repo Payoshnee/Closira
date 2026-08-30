@@ -10,12 +10,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ ite
     .getAll()
     .map((cookie) => `${cookie.name}=${cookie.value}`)
     .join("; ");
+  const csrfToken = cookieStore.get("closira_csrf")?.value;
 
   const response = await fetch(`${apiUrl}/wardrobe/items/${itemId}/upload-url`, {
     method: "POST",
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
+      ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
       Cookie: cookieHeader
     },
     body: JSON.stringify(await request.json())

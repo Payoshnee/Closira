@@ -63,9 +63,10 @@ export async function submitAuthIntent(intent: AuthIntent, formData: FormData): 
 
 export async function logout(): Promise<void> {
   const cookieHeader = await getCookieHeader();
+  const csrfToken = await getCsrfToken();
   const result = await fetch(`${apiUrl}/auth/logout`, {
     method: "POST",
-    headers: { Accept: "application/json", Cookie: cookieHeader },
+    headers: { Accept: "application/json", Cookie: cookieHeader, ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}) },
     cache: "no-store"
   });
 
@@ -112,6 +113,11 @@ async function getCookieHeader() {
     .join("; ");
 }
 
+async function getCsrfToken() {
+  const cookieStore = await cookies();
+  return cookieStore.get("closira_csrf")?.value;
+}
+
 async function persistSetCookie(headers: Headers) {
   const cookieStore = await cookies();
   const setCookies = getSetCookies(headers);
@@ -125,8 +131,9 @@ async function persistSetCookie(headers: Headers) {
 
     const name = pair.slice(0, index).trim();
     const value = pair.slice(index + 1).trim();
+    const httpOnly = header.toLowerCase().includes("httponly");
     cookieStore.set(name, value, {
-      httpOnly: true,
+      httpOnly,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/"

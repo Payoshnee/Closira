@@ -81,6 +81,11 @@ export function BillingPanel({
             <div key={payment.id} className="flex flex-col gap-2 rounded-lg bg-ivory-100 p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
               <span className="font-semibold text-charcoal">{payment.amount}</span>
               <span className="text-stone-600">{payment.gateway ?? "gateway"} · {payment.status} · {payment.paidAt}</span>
+              {payment.downloadUrl ? (
+                <a className="font-semibold text-rose-700 underline-offset-4 hover:underline" href={payment.downloadUrl}>
+                  Download
+                </a>
+              ) : null}
             </div>
           ))}
         </div>

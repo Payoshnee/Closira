@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, Req } from "@nestjs/common";
 import { AiJobType, AiProviderType, Prisma } from "@prisma/client";
 import type { Request } from "express";
 import { AuthService } from "./auth/auth.service";
+import { EntitlementsService } from "./billing/entitlements.service";
 import { requireCurrentUser } from "./auth/current-user";
 import { PrismaService } from "./prisma.service";
 import { itemInclude, toWardrobeItem } from "./wardrobe.mapper";
@@ -29,7 +30,8 @@ const supportedProviders: AiProviderSettings["supportedProviders"] = [
 export class AiController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly auth: AuthService
+    private readonly auth: AuthService,
+    private readonly entitlements: EntitlementsService
   ) {}
 
   @Get("settings")
@@ -84,6 +86,8 @@ export class AiController {
   async recommendOutfit(@Req() request: Request, @Body() body: { prompt?: string; occasion?: string }) {
     const user = requireCurrentUser(request, this.auth);
     const provider = await this.activeProvider(user.id);
+    await this.entitlements.requireAiRequest(user.id);
+    await this.entitlements.requireProvider(user.id, provider.provider);
     const wardrobe = await this.userWardrobe(user.id);
     const job = await this.createJob(user.id, provider.provider, "OUTFIT_RECOMMENDATION", { prompt: body.prompt, occasion: body.occasion });
 
@@ -125,6 +129,8 @@ export class AiController {
   async shoppingCheck(@Req() request: Request, @Body() body: { itemName?: string; occasion?: string }) {
     const user = requireCurrentUser(request, this.auth);
     const provider = await this.activeProvider(user.id);
+    await this.entitlements.requireAiRequest(user.id);
+    await this.entitlements.requireProvider(user.id, provider.provider);
     const wardrobe = await this.userWardrobe(user.id);
     const job = await this.createJob(user.id, provider.provider, "SHOPPING_CHECK", body);
 
@@ -161,6 +167,7 @@ export class AiController {
   @Post("items/:itemId/analyze")
   async analyzeItem(@Req() request: Request, @Param("itemId") itemId: string) {
     const user = requireCurrentUser(request, this.auth);
+    await this.entitlements.requireAiRequest(user.id);
     const item = await this.prisma.wardrobeItem.findFirstOrThrow({ where: { id: itemId, userId: user.id }, include: itemInclude });
     const job = await this.createJob(user.id, "NATIVE", "CLOTHING_ANALYSIS", { itemId });
     const analysis = await postJson(`${aiServiceUrl()}/analyze-clothing`, {
@@ -179,6 +186,7 @@ export class AiController {
   @Post("items/:itemId/embed")
   async embedItem(@Req() request: Request, @Param("itemId") itemId: string) {
     const user = requireCurrentUser(request, this.auth);
+    await this.entitlements.requireAiRequest(user.id);
     const item = await this.prisma.wardrobeItem.findFirstOrThrow({ where: { id: itemId, userId: user.id }, include: { images: true } });
     const job = await this.createJob(user.id, "NATIVE", "IMAGE_EMBEDDING", { itemId });
     const result = await postJson(`${aiServiceUrl()}/embed-image`, { item_name: item.name, image_url: item.images[0]?.url });

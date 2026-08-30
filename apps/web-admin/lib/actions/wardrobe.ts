@@ -76,6 +76,16 @@ export async function archiveWardrobeItem(itemId: string) {
   redirect("/dashboard/wardrobe");
 }
 
+export async function deleteWardrobeImage(itemId: string, imageId: string) {
+  await apiDelete(`/wardrobe/items/${itemId}/images/${imageId}`);
+  revalidateWardrobe(itemId);
+}
+
+export async function setPrimaryWardrobeImage(itemId: string, imageId: string) {
+  await apiPatch(`/wardrobe/items/${itemId}/images/${imageId}/primary`, {});
+  revalidateWardrobe(itemId);
+}
+
 function value(formData: FormData, key: string) {
   const current = formData.get(key);
   return typeof current === "string" && current.trim() ? current.trim() : undefined;

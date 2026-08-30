@@ -1,10 +1,13 @@
 import { Injectable, Logger, NestMiddleware } from "@nestjs/common";
 import { randomUUID } from "crypto";
 import type { NextFunction, Request, Response } from "express";
+import { MetricsService } from "../monitoring/metrics.service";
 
 @Injectable()
 export class RequestLoggingMiddleware implements NestMiddleware {
   private readonly logger = new Logger(RequestLoggingMiddleware.name);
+
+  constructor(private readonly metrics: MetricsService) {}
 
   use(request: RequestWithRequestId, response: Response, next: NextFunction) {
     const startedAt = process.hrtime.bigint();
@@ -14,6 +17,7 @@ export class RequestLoggingMiddleware implements NestMiddleware {
 
     response.on("finish", () => {
       const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+      this.metrics.recordRequest(request.method, request.originalUrl, response.statusCode, durationMs);
       const event = {
         event: "http_request",
         requestId,

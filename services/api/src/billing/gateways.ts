@@ -59,6 +59,10 @@ export class OpenCheckoutGatewayAdapter implements PaymentGatewayAdapter {
 
   async parseWebhook(rawBody: unknown): Promise<GatewayWebhookResult> {
     const body = rawBody as Record<string, unknown>;
+    if (this.key === "stripe") return parseStripeWebhook(body);
+    if (this.key === "razorpay") return parseRazorpayWebhook(body);
+    if (this.key === "paddle") return parsePaddleWebhook(body);
+    if (this.key === "paypal") return parsePaypalWebhook(body);
     return {
       eventId: stringValue(body.id),
       eventType: stringValue(body.type) ?? `${this.key}.webhook`,
@@ -71,6 +75,75 @@ export class OpenCheckoutGatewayAdapter implements PaymentGatewayAdapter {
       currency: stringValue(body.currency)
     };
   }
+}
+
+function parseStripeWebhook(body: Record<string, unknown>): GatewayWebhookResult {
+  const data = objectValue(objectValue(body.data)?.object);
+  const lines = objectValue(data?.lines);
+  const firstLine = Array.isArray(lines?.data) ? objectValue(lines.data[0]) : undefined;
+  const price = objectValue(firstLine?.price);
+  const metadata = objectValue(data?.metadata);
+  return {
+    eventId: stringValue(body.id),
+    eventType: stringValue(body.type) ?? "stripe.webhook",
+    providerCustomerId: stringValue(data?.customer),
+    providerSubscriptionId: stringValue(data?.subscription) ?? stringValue(data?.id),
+    providerInvoiceId: stringValue(data?.id),
+    status: stringValue(data?.status),
+    plan: stringValue(metadata?.plan) ?? stringValue(price?.lookup_key),
+    amountDue: numberValue(data?.amount_due) ?? centsToMajor(numberValue(data?.amount_paid)),
+    currency: stringValue(data?.currency)?.toUpperCase()
+  };
+}
+
+function parseRazorpayWebhook(body: Record<string, unknown>): GatewayWebhookResult {
+  const payload = objectValue(body.payload);
+  const subscription = objectValue(objectValue(payload?.subscription)?.entity);
+  const invoice = objectValue(objectValue(payload?.invoice)?.entity);
+  const notes = objectValue(subscription?.notes) ?? objectValue(invoice?.notes);
+  return {
+    eventId: stringValue(body.event),
+    eventType: stringValue(body.event) ?? "razorpay.webhook",
+    providerCustomerId: stringValue(subscription?.customer_id) ?? stringValue(invoice?.customer_id),
+    providerSubscriptionId: stringValue(subscription?.id) ?? stringValue(invoice?.subscription_id),
+    providerInvoiceId: stringValue(invoice?.id),
+    status: stringValue(subscription?.status) ?? stringValue(invoice?.status),
+    plan: stringValue(notes?.plan),
+    amountDue: paiseToMajor(numberValue(invoice?.amount_due) ?? numberValue(invoice?.amount_paid)),
+    currency: stringValue(invoice?.currency)?.toUpperCase()
+  };
+}
+
+function parsePaddleWebhook(body: Record<string, unknown>): GatewayWebhookResult {
+  const data = objectValue(body.data) ?? body;
+  const items = Array.isArray(data.items) ? objectValue(data.items[0]) : undefined;
+  const price = objectValue(items?.price);
+  return {
+    eventId: stringValue(body.event_id) ?? stringValue(data.id),
+    eventType: stringValue(body.event_type) ?? "paddle.webhook",
+    providerCustomerId: stringValue(data.customer_id),
+    providerSubscriptionId: stringValue(data.subscription_id) ?? stringValue(data.id),
+    providerInvoiceId: stringValue(data.invoice_id) ?? stringValue(data.id),
+    status: stringValue(data.status),
+    plan: stringValue(price?.custom_data && objectValue(price.custom_data)?.plan) ?? stringValue(data.custom_data && objectValue(data.custom_data)?.plan),
+    amountDue: numberValue(data.total),
+    currency: stringValue(data.currency_code)?.toUpperCase()
+  };
+}
+
+function parsePaypalWebhook(body: Record<string, unknown>): GatewayWebhookResult {
+  const resource = objectValue(body.resource) ?? body;
+  return {
+    eventId: stringValue(body.id),
+    eventType: stringValue(body.event_type) ?? "paypal.webhook",
+    providerCustomerId: stringValue(resource.subscriber && objectValue(resource.subscriber)?.payer_id),
+    providerSubscriptionId: stringValue(resource.billing_agreement_id) ?? stringValue(resource.id),
+    providerInvoiceId: stringValue(resource.invoice_id) ?? stringValue(resource.id),
+    status: stringValue(resource.status),
+    plan: stringValue(resource.custom_id),
+    amountDue: numberValue(objectValue(resource.amount)?.value),
+    currency: stringValue(objectValue(resource.amount)?.currency_code)
+  };
 }
 
 async function postJson(url: string, body: unknown, secret: string) {
@@ -88,5 +161,19 @@ function stringValue(value: unknown) {
 }
 
 function numberValue(value: unknown) {
-  return typeof value === "number" ? value : undefined;
+  if (typeof value === "number") return value;
+  if (typeof value === "string" && value.trim()) return Number(value);
+  return undefined;
+}
+
+function objectValue(value: unknown) {
+  return typeof value === "object" && value && !Array.isArray(value) ? (value as Record<string, unknown>) : undefined;
+}
+
+function centsToMajor(value?: number) {
+  return typeof value === "number" ? value / 100 : undefined;
+}
+
+function paiseToMajor(value?: number) {
+  return typeof value === "number" ? value / 100 : undefined;
 }

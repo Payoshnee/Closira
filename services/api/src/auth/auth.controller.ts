@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Res } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Post, Req, Res } from "@nestjs/common";
 import type { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 
@@ -23,19 +23,22 @@ export class AuthController {
 
   @Post("logout")
   logout(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
-    return this.auth.logout(this.cookies(request).closira_refresh, response);
+    return this.auth.logout(this.bearer(request) ?? this.cookies(request).closira_refresh, response);
+  }
+
+  @Delete("account")
+  deleteAccount(@Req() request: Request, @Body() body: { password?: string }, @Res({ passthrough: true }) response: Response) {
+    return this.auth.deleteAccount(this.bearer(request) ?? this.cookies(request).closira_access, body.password, response);
   }
 
   @Post("refresh")
   refresh(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
-    return this.auth.refresh(this.cookies(request).closira_refresh, response);
+    return this.auth.refresh(this.bearer(request) ?? this.cookies(request).closira_refresh, response);
   }
 
   @Get("me")
   me(@Req() request: Request) {
-    const authHeader = request.headers.authorization;
-    const bearer = authHeader?.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : undefined;
-    return this.auth.me(bearer ?? this.cookies(request).closira_access);
+    return this.auth.me(this.bearer(request) ?? this.cookies(request).closira_access);
   }
 
   @Post("forgot-password")
@@ -55,5 +58,10 @@ export class AuthController {
 
   private cookies(request: Request) {
     return (request.cookies ?? {}) as AuthCookies;
+  }
+
+  private bearer(request: Request) {
+    const authHeader = request.headers.authorization;
+    return authHeader?.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : undefined;
   }
 }

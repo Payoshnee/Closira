@@ -4,10 +4,12 @@ from typing import Optional
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+from app.image_embeddings import EMBEDDING_DIMENSION, ImageEmbedder
 from app.model_registry import load_model
 
 app = FastAPI(title="Closira AI Service", version="0.1.0")
 baseline_model = load_model()
+image_embedder = ImageEmbedder()
 
 
 class ClothingAnalysisRequest(BaseModel):
@@ -70,13 +72,12 @@ def analyze_clothing(payload: ClothingAnalysisRequest) -> dict:
 
 @app.post("/embed-image")
 def embed_image(payload: ClothingAnalysisRequest) -> dict:
-    seed = sum(ord(char) for char in (payload.item_name or payload.image_url or "closira"))
-    embedding = [round(((seed + index * 17) % 100) / 100, 4) for index in range(16)]
+    result = image_embedder.embed(payload.item_name, payload.image_url)
     return {
-        "embedding": embedding,
-        "dimensions": len(embedding),
-        "model": "closira-native-embedding-v0",
-        "fallback_used": True,
+        "embedding": result.embedding,
+        "dimensions": EMBEDDING_DIMENSION,
+        "model": result.model,
+        "fallback_used": result.fallback_used,
     }
 
 

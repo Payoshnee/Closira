@@ -1,0 +1,43 @@
+{
+  "allowed_license_families": [
+    "user_opt_in",
+    "owned_catalog",
+    "paid_commercial_license",
+    "cc-by-4.0",
+    "cc-by-3.0",
+    "cc-by-2.0",
+    "cc0",
+    "public-domain"
+  ],
+  "blocked_for_commercial_training": [
+    {
+      "name": "DeepFashion / DeepFashion2",
+      "reason": "Published dataset terms are non-commercial/research-only or require separate commercial permission."
+    },
+    {
+      "name": "Random web scrape",
+      "reason": "No reliable rights, consent, attribution, or takedown process."
+    },
+    {
+      "name": "LAION URL subsets without per-image license verification",
+      "reason": "Indexes URLs and metadata; commercial use needs source-level rights review."
+    }
+  ],
+  "recommended_sources": [
+    {
+      "name": "User opt-in wardrobe photos",
+      "license_family": "user_opt_in",
+      "notes": "Best production source if users explicitly opt in for model improvement and can revoke/delete."
+    },
+    {
+      "name": "Owned brand or merchant catalog",
+      "license_family": "owned_catalog",
+      "notes": "Use signed contracts for training, search, and commercial product use."
+    },
+    {
+      "name": "Verified Creative Commons fashion images",
+      "license_family": "cc-by-4.0",
+      "notes": "Store attribution, source URL, author, license URL, and retrieval timestamp per image."
+    }
+  ]
+}

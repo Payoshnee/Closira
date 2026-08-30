@@ -15,6 +15,7 @@ export type PaymentRecord = {
   paidAt: string;
   gateway?: string;
   hostedInvoiceUrl?: string;
+  downloadUrl?: string;
 };
 
 export type BillingGateway = {

@@ -38,7 +38,7 @@ export const mockWardrobeItems: WardrobeItem[] = [
     notes: "Best with gold clutch and pearl heels.",
     isFavorite: true,
     tags: [mockTags[1], mockTags[3]],
-    images: [{ id: "img-rose-sari", imageType: "front", alt: "Rose silk sari", gradient: "from-rose-200 via-ivory-100 to-champagne" }]
+    images: [{ id: "img-rose-sari", imageType: "front", alt: "Rose silk sari", gradient: "from-rose-200 via-ivory-100 to-champagne", isPrimary: true }]
   },
   {
     id: "item-linen-blazer",
@@ -61,7 +61,7 @@ export const mockWardrobeItems: WardrobeItem[] = [
     notes: "Light enough for warm office days.",
     isFavorite: true,
     tags: [mockTags[0], mockTags[2], mockTags[4]],
-    images: [{ id: "img-linen-blazer", imageType: "front", alt: "Ivory linen blazer", gradient: "from-ivory-100 via-white to-sage/50" }]
+    images: [{ id: "img-linen-blazer", imageType: "front", alt: "Ivory linen blazer", gradient: "from-ivory-100 via-white to-sage/50", isPrimary: true }]
   },
   {
     id: "item-wide-trousers",
@@ -84,7 +84,7 @@ export const mockWardrobeItems: WardrobeItem[] = [
     notes: "High rewear value. Works with most tops.",
     isFavorite: false,
     tags: [mockTags[0], mockTags[4]],
-    images: [{ id: "img-wide-trousers", imageType: "front", alt: "Charcoal wide-leg trousers", gradient: "from-stone-700 via-charcoal to-stone-500" }]
+    images: [{ id: "img-wide-trousers", imageType: "front", alt: "Charcoal wide-leg trousers", gradient: "from-stone-700 via-charcoal to-stone-500", isPrimary: true }]
   },
   {
     id: "item-pearl-heels",
@@ -107,7 +107,7 @@ export const mockWardrobeItems: WardrobeItem[] = [
     notes: "Never worn. Pair with sari or blazer looks.",
     isFavorite: false,
     tags: [mockTags[1], mockTags[3]],
-    images: [{ id: "img-pearl-heels", imageType: "front", alt: "Pearl block heels", gradient: "from-white via-ivory-100 to-champagne" }]
+    images: [{ id: "img-pearl-heels", imageType: "front", alt: "Pearl block heels", gradient: "from-white via-ivory-100 to-champagne", isPrimary: true }]
   },
   {
     id: "item-gold-clutch",
@@ -130,7 +130,7 @@ export const mockWardrobeItems: WardrobeItem[] = [
     notes: "Compact but fits essentials.",
     isFavorite: true,
     tags: [mockTags[1], mockTags[3]],
-    images: [{ id: "img-gold-clutch", imageType: "front", alt: "Gold evening clutch", gradient: "from-yellow-100 via-champagne to-rose-100" }]
+    images: [{ id: "img-gold-clutch", imageType: "front", alt: "Gold evening clutch", gradient: "from-yellow-100 via-champagne to-rose-100", isPrimary: true }]
   }
 ];
 
@@ -141,4 +141,3 @@ export const mockWardrobeSummary: WardrobeSummary = {
   totalValue: mockWardrobeItems.reduce((sum, item) => sum + item.purchasePrice, 0),
   mostUsedCategory: "Western Wear"
 };
-

@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Headers, Param, Post, Req } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, Post, Req, Res } from "@nestjs/common";
 import { SubscriptionPlan, SubscriptionStatus } from "@prisma/client";
-import type { Request } from "express";
+import type { Request, Response } from "express";
 import { AuthService } from "./auth/auth.service";
 import { requireCurrentUser } from "./auth/current-user";
 import { ManualGatewayAdapter, OpenCheckoutGatewayAdapter } from "./billing/gateways";
 import { PaymentGatewayAdapter, planPrices } from "./billing/gateway";
+import { defaultEntitlements, verifyGatewaySignature } from "./billing/entitlements.service";
 import { PrismaService } from "./prisma.service";
 
 @Controller("billing")
@@ -53,8 +54,31 @@ export class BillingController {
       amount: `${invoice.currency} ${Number(invoice.amountDue).toFixed(2)}`,
       status: invoice.status === "paid" ? "paid" : "pending",
       paidAt: invoice.paidAt?.toISOString() ?? invoice.issuedAt?.toISOString() ?? invoice.createdAt.toISOString(),
-      hostedInvoiceUrl: invoice.hostedInvoiceUrl
+      hostedInvoiceUrl: invoice.hostedInvoiceUrl,
+      downloadUrl: `/api/v1/billing/invoices/${invoice.id}/download`
     }));
+  }
+
+  @Get("invoices/:id/download")
+  async downloadInvoice(@Req() request: Request, @Param("id") id: string, @Res() response: Response) {
+    const user = requireCurrentUser(request, this.auth);
+    const invoice = await this.prisma.invoice.findFirstOrThrow({
+      where: { id, subscription: { userId: user.id } },
+      include: { subscription: { include: { user: true } } }
+    });
+    const text = [
+      "Closira Invoice",
+      `Invoice: ${invoice.id}`,
+      `Customer: ${invoice.subscription.user.email}`,
+      `Gateway: ${invoice.providerKey}`,
+      `Status: ${invoice.status}`,
+      `Amount due: ${invoice.currency} ${Number(invoice.amountDue).toFixed(2)}`,
+      `Issued: ${invoice.issuedAt?.toISOString() ?? invoice.createdAt.toISOString()}`,
+      invoice.paidAt ? `Paid: ${invoice.paidAt.toISOString()}` : "Paid: pending"
+    ].join("\n");
+    response.setHeader("Content-Type", "text/plain; charset=utf-8");
+    response.setHeader("Content-Disposition", `attachment; filename="closira-invoice-${invoice.id}.txt"`);
+    response.send(text);
   }
 
   @Get("gateways")
@@ -135,6 +159,7 @@ export class BillingController {
   @Post("webhooks/:gateway")
   async webhook(@Param("gateway") gatewayKey: string, @Body() body: unknown, @Headers() headers: Record<string, string | string[] | undefined>) {
     const gateway = await this.gatewayFor(null, gatewayKey);
+    verifyGatewaySignature(body, headers, this.webhookSecretFor(gatewayKey));
     const event = await gateway.parseWebhook(body, headers);
     if (event.providerSubscriptionId && event.plan) {
       await this.prisma.subscription.updateMany({
@@ -147,6 +172,31 @@ export class BillingController {
         }
       });
     }
+    if (event.providerSubscriptionId && event.providerInvoiceId) {
+      const subscription = await this.prisma.subscription.findUnique({ where: { stripeSubscriptionId: event.providerSubscriptionId } });
+      if (subscription) {
+        await this.prisma.invoice.upsert({
+          where: { providerInvoiceId: event.providerInvoiceId },
+          update: {
+            providerKey: gateway.key,
+            amountDue: event.amountDue ?? 0,
+            currency: event.currency ?? process.env.BILLING_CURRENCY ?? "USD",
+            status: invoiceStatus(event.eventType, event.status),
+            paidAt: isPaidInvoice(event.eventType, event.status) ? new Date() : undefined
+          },
+          create: {
+            subscriptionId: subscription.id,
+            providerInvoiceId: event.providerInvoiceId,
+            providerKey: gateway.key,
+            amountDue: event.amountDue ?? 0,
+            currency: event.currency ?? process.env.BILLING_CURRENCY ?? "USD",
+            status: invoiceStatus(event.eventType, event.status),
+            issuedAt: new Date(),
+            paidAt: isPaidInvoice(event.eventType, event.status) ? new Date() : undefined
+          }
+        });
+      }
+    }
     return { ok: true, event };
   }
 
@@ -158,6 +208,10 @@ export class BillingController {
     });
     const secret = gateway?.secretRef ? process.env[gateway.secretRef] : process.env[`${key.toUpperCase().replaceAll("-", "_")}_SECRET_KEY`];
     return new OpenCheckoutGatewayAdapter(key, { baseUrl: gateway?.baseUrl ?? process.env[`${key.toUpperCase().replaceAll("-", "_")}_BASE_URL`], secret });
+  }
+
+  private webhookSecretFor(key: string) {
+    return process.env[`${key.toUpperCase().replaceAll("-", "_")}_WEBHOOK_SECRET`];
   }
 }
 
@@ -175,15 +229,23 @@ function normalizeStatus(status?: string): SubscriptionStatus {
   if (normalized === "TRIALING" || normalized === "ACTIVE" || normalized === "PAST_DUE" || normalized === "CANCELED" || normalized === "INCOMPLETE") {
     return normalized;
   }
+  if (normalized === "PAID" || normalized === "COMPLETED" || normalized === "AUTHENTICATED") return "ACTIVE";
+  if (normalized === "FAILED" || normalized === "PAYMENT_FAILED" || normalized === "OVERDUE") return "PAST_DUE";
+  if (normalized === "CANCELLED") return "CANCELED";
   return "ACTIVE";
 }
 
 function entitlementFor(plan: SubscriptionPlan) {
-  const map: Record<SubscriptionPlan, Record<string, number | boolean>> = {
-    FREE: { wardrobeItems: 50, aiRequestsPerMonth: 25, customProviders: false },
-    PRO: { wardrobeItems: 500, aiRequestsPerMonth: 1000, customProviders: true },
-    STYLIST: { wardrobeItems: 5000, aiRequestsPerMonth: 5000, customProviders: true },
-    ENTERPRISE: { wardrobeItems: 100000, aiRequestsPerMonth: 50000, customProviders: true, adminReports: true }
-  };
-  return map[plan];
+  return defaultEntitlements[plan];
+}
+
+function invoiceStatus(eventType: string, status?: string) {
+  const normalized = `${eventType} ${status ?? ""}`.toLowerCase();
+  if (normalized.includes("paid") || normalized.includes("succeeded") || normalized.includes("completed")) return "paid";
+  if (normalized.includes("failed") || normalized.includes("past_due") || normalized.includes("overdue")) return "failed";
+  return "pending";
+}
+
+function isPaidInvoice(eventType: string, status?: string) {
+  return invoiceStatus(eventType, status) === "paid";
 }

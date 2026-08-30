@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Req } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Query, Req } from "@nestjs/common";
+import { Prisma, StorageProvider } from "@prisma/client";
 import type { Request } from "express";
 import { AuthService } from "./auth/auth.service";
+import { EntitlementsService } from "./billing/entitlements.service";
 import { requireCurrentUser } from "./auth/current-user";
 import { PrismaService } from "./prisma.service";
+import { ImageProcessingService } from "./storage/image-processing.service";
 import { StorageService } from "./storage/storage.service";
 import { itemInclude, toWardrobeItem } from "./wardrobe.mapper";
 
@@ -32,7 +34,9 @@ export class WardrobeController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auth: AuthService,
-    private readonly storage: StorageService
+    private readonly storage: StorageService,
+    private readonly imageProcessing: ImageProcessingService,
+    private readonly entitlements: EntitlementsService
   ) {}
 
   @Get("items")
@@ -122,6 +126,7 @@ export class WardrobeController {
   @Post("items")
   async createItem(@Req() request: Request, @Body() body: WardrobeBody) {
     const user = requireCurrentUser(request, this.auth);
+    await this.entitlements.requireWardrobeItemSlot(user.id);
     const item = await this.prisma.wardrobeItem.create({
       data: {
         ...this.createItemData(user.id, body),
@@ -187,6 +192,8 @@ export class WardrobeController {
   ) {
     const user = requireCurrentUser(request, this.auth);
     await this.prisma.wardrobeItem.findFirstOrThrow({ where: { id, userId: user.id } });
+    validateImageUpload(body);
+    await this.entitlements.requireStorageBytes(user.id, body.byteSize);
     const safeName = body.fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
     const storageKey = `users/${user.id}/wardrobe/${id}/${Date.now()}-${safeName}`;
     const signedUpload = await this.storage.createSignedUpload({
@@ -215,6 +222,95 @@ export class WardrobeController {
       expiresInSeconds: signedUpload.expiresInSeconds,
       headers: signedUpload.headers ?? {}
     };
+  }
+
+  @Post("items/:id/images/:imageId/complete")
+  async completeImageUpload(@Req() request: Request, @Param("id") id: string, @Param("imageId") imageId: string) {
+    const user = requireCurrentUser(request, this.auth);
+    await this.prisma.wardrobeItem.findFirstOrThrow({ where: { id, userId: user.id } });
+    const image = await this.prisma.wardrobeImage.findFirstOrThrow({ where: { id: imageId, itemId: id } });
+    const processed = await this.imageProcessing.processImageVariants(image.storageKey, image.provider);
+    const updated = await this.prisma.wardrobeImage.update({
+      where: { id: imageId },
+      data: {
+        storageKey: processed.variants.detail.key,
+        url: "",
+        contentType: "image/webp",
+        byteSize: processed.variants.detail.byteSize,
+        width: processed.variants.detail.width,
+        height: processed.variants.detail.height,
+        analysis: {
+          ...jsonObject(image.analysis),
+          processedAt: new Date().toISOString(),
+          originalStorageKey: image.storageKey,
+          original: processed.original,
+          variants: processed.variants
+        }
+      }
+    });
+    const read = await this.storage.createSignedRead(updated.storageKey, updated.provider);
+
+    return {
+      imageId,
+      status: "processed",
+      width: updated.width,
+      height: updated.height,
+      byteSize: updated.byteSize,
+      variants: processed.variants,
+      readUrl: read.url,
+      expiresInSeconds: read.expiresInSeconds
+    };
+  }
+
+  @Get("items/:id/images/:imageId/read-url")
+  async createImageReadUrl(@Req() request: Request, @Param("id") id: string, @Param("imageId") imageId: string) {
+    const user = requireCurrentUser(request, this.auth);
+    await this.prisma.wardrobeItem.findFirstOrThrow({ where: { id, userId: user.id } });
+    const image = await this.prisma.wardrobeImage.findFirstOrThrow({ where: { id: imageId, itemId: id } });
+    return this.storage.createSignedRead(image.storageKey, image.provider);
+  }
+
+  @Patch("items/:id/images/:imageId/primary")
+  async setPrimaryImage(@Req() request: Request, @Param("id") id: string, @Param("imageId") imageId: string) {
+    const user = requireCurrentUser(request, this.auth);
+    await this.prisma.wardrobeItem.findFirstOrThrow({ where: { id, userId: user.id } });
+    await this.prisma.$transaction([
+      this.prisma.wardrobeImage.updateMany({ where: { itemId: id }, data: { isPrimary: false } }),
+      this.prisma.wardrobeImage.update({ where: { id: imageId, itemId: id }, data: { isPrimary: true } })
+    ]);
+    const item = await this.prisma.wardrobeItem.findFirstOrThrow({
+      where: { id, userId: user.id },
+      include: itemInclude
+    });
+
+    return toWardrobeItem(item);
+  }
+
+  @Delete("items/:id/images/:imageId")
+  async deleteImage(@Req() request: Request, @Param("id") id: string, @Param("imageId") imageId: string) {
+    const user = requireCurrentUser(request, this.auth);
+    await this.prisma.wardrobeItem.findFirstOrThrow({ where: { id, userId: user.id } });
+    const image = await this.prisma.wardrobeImage.findFirstOrThrow({ where: { id: imageId, itemId: id } });
+
+    await this.prisma.$transaction([
+      this.prisma.imageEmbedding.deleteMany({ where: { imageId } }),
+      this.prisma.wardrobeImage.delete({ where: { id: imageId } })
+    ]);
+    for (const key of imageStorageKeys(image)) {
+      await this.storage.deleteObject(key, image.provider);
+    }
+
+    if (image.isPrimary) {
+      const nextImage = await this.prisma.wardrobeImage.findFirst({
+        where: { itemId: id },
+        orderBy: { createdAt: "asc" }
+      });
+      if (nextImage) {
+        await this.prisma.wardrobeImage.update({ where: { id: nextImage.id }, data: { isPrimary: true } });
+      }
+    }
+
+    return { ok: true };
   }
 
   @Patch("items/:id/archive")
@@ -271,4 +367,40 @@ export class WardrobeController {
     if (sort === "lastWornAt_desc") return { lastWornAt: "desc" };
     return { updatedAt: "desc" };
   }
+
+}
+
+function validateImageUpload(body: { fileName: string; contentType: string; byteSize: number }) {
+  const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"]);
+  const maxBytes = Number(process.env.IMAGE_UPLOAD_MAX_BYTES ?? 10 * 1024 * 1024);
+  if (!body.fileName || !body.contentType || !allowedTypes.has(body.contentType)) {
+    throw new BadRequestException("Only JPEG, PNG, WebP, HEIC, and HEIF wardrobe images are supported.");
+  }
+  if (!Number.isFinite(body.byteSize) || body.byteSize <= 0 || body.byteSize > maxBytes) {
+    throw new BadRequestException(`Image must be smaller than ${Math.round(maxBytes / 1024 / 1024)}MB.`);
+  }
+}
+
+function jsonObject(value: Prisma.JsonValue) {
+  return typeof value === "object" && value && !Array.isArray(value) ? value : {};
+}
+
+function imageStorageKeys(image: { storageKey: string; analysis: Prisma.JsonValue }) {
+  const keys = new Set([image.storageKey]);
+  const analysis = jsonObject(image.analysis) as {
+    original?: { key?: string };
+    variants?: Record<string, { key?: string }>;
+  };
+
+  if (analysis.original?.key) {
+    keys.add(analysis.original.key);
+  }
+
+  for (const variant of Object.values(analysis.variants ?? {})) {
+    if (variant.key) {
+      keys.add(variant.key);
+    }
+  }
+
+  return [...keys];
 }

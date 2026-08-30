@@ -1,0 +1,1 @@
+e: this is now gateway-agnostic architecture, but each real payment provider still needs its exact production adapter details: signature verification, hosted checkout API payloads, event mapping, tax handling, refunds, failed payment recovery, and PCI/legal review. The app is no longer hardcoded to one provider, which is the right foundation.

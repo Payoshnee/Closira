@@ -5,6 +5,8 @@ import * as jwt from "jsonwebtoken";
 import { randomBytes, createHash } from "node:crypto";
 import { MailService } from "../mail/mail.service";
 import { PrismaService } from "../prisma.service";
+import { csrfCookieName } from "../security/csrf.middleware";
+import { LoginLockoutService } from "./login-lockout.service";
 
 const ACCESS_COOKIE = "closira_access";
 const REFRESH_COOKIE = "closira_refresh";
@@ -26,7 +28,8 @@ type CookieResponse = {
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly mail: MailService
+    private readonly mail: MailService,
+    private readonly lockout: LoginLockoutService = new LoginLockoutService()
   ) {}
 
   cookieNames = { access: ACCESS_COOKIE, refresh: REFRESH_COOKIE };
@@ -61,29 +64,34 @@ export class AuthService {
     });
 
     const devVerificationLink = await this.mail.sendVerificationEmail(email, verificationToken);
-    await this.issueSession(user.id, response);
+    const tokens = await this.issueSession(user.id, response);
     return {
       user: await this.toAuthUser(user.id),
       emailVerificationRequired: true,
+      tokens,
       ...(process.env.SMTP_HOST ? {} : { devVerificationLink })
     };
   }
 
   async login(input: { email: string; password: string }, response: CookieResponse) {
     const email = input.email.trim().toLowerCase();
+    await this.assertNotLocked(email);
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user || user.deletedAt) {
+      await this.recordLoginFailure(email);
       throw new UnauthorizedException("Invalid email or password.");
     }
 
     const ok = await bcrypt.compare(input.password, user.passwordHash);
     if (!ok) {
+      await this.recordLoginFailure(email);
       throw new UnauthorizedException("Invalid email or password.");
     }
 
+    await this.clearLoginFailures(email);
     await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-    await this.issueSession(user.id, response);
-    return { user: await this.toAuthUser(user.id) };
+    const tokens = await this.issueSession(user.id, response);
+    return { user: await this.toAuthUser(user.id), tokens };
   }
 
   async me(accessToken?: string) {
@@ -104,8 +112,8 @@ export class AuthService {
     }
 
     await this.prisma.session.update({ where: { id: session.id }, data: { revokedAt: new Date() } });
-    await this.issueSession(payload.sub, response);
-    return { user: await this.toAuthUser(payload.sub) };
+    const tokens = await this.issueSession(payload.sub, response);
+    return { user: await this.toAuthUser(payload.sub), tokens };
   }
 
   async logout(refreshToken: string | undefined, response: CookieResponse) {
@@ -116,6 +124,39 @@ export class AuthService {
       });
     }
 
+    this.clearAuthCookies(response);
+    return { ok: true };
+  }
+
+  async deleteAccount(accessToken: string | undefined, password: string | undefined, response: CookieResponse) {
+    const payload = this.verifyAccessToken(accessToken);
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: payload.sub } });
+    if (password) {
+      const ok = await bcrypt.compare(password, user.passwordHash);
+      if (!ok) {
+        throw new UnauthorizedException("Password is incorrect.");
+      }
+    }
+
+    const deletedEmail = `deleted-${user.id}@deleted.closira.local`;
+    await this.prisma.$transaction([
+      this.prisma.session.updateMany({ where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() } }),
+      this.prisma.aiProviderSetting.updateMany({ where: { userId: user.id }, data: { isEnabled: false, encryptedSecret: null } }),
+      this.prisma.imageEmbedding.deleteMany({ where: { item: { userId: user.id } } }),
+      this.prisma.aiJob.updateMany({ where: { userId: user.id }, data: { status: "FAILED", errorMessage: "Account deleted." } }),
+      this.prisma.wardrobeImage.deleteMany({ where: { item: { userId: user.id } } }),
+      this.prisma.wardrobeItem.updateMany({ where: { userId: user.id }, data: { status: "DELETED", notes: null } }),
+      this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          deletedAt: new Date(),
+          email: deletedEmail,
+          name: "Deleted user",
+          imageUrl: null
+        }
+      }),
+      this.prisma.auditLog.create({ data: { actorId: user.id, action: "account.deleted", entity: "user", entityId: user.id } })
+    ]);
     this.clearAuthCookies(response);
     return { ok: true };
   }
@@ -195,19 +236,25 @@ export class AuthService {
       throw new UnauthorizedException("Missing access token.");
     }
 
-    try {
-      return jwt.verify(token, this.accessSecret()) as TokenPayload;
-    } catch {
-      throw new UnauthorizedException("Access token is invalid or expired.");
+    for (const secret of this.accessSecrets()) {
+      try {
+        return jwt.verify(token, secret) as TokenPayload;
+      } catch {
+        continue;
+      }
     }
+    throw new UnauthorizedException("Access token is invalid or expired.");
   }
 
   private verifyRefreshToken(token: string): TokenPayload {
-    try {
-      return jwt.verify(token, this.refreshSecret()) as TokenPayload;
-    } catch {
-      throw new UnauthorizedException("Refresh token is invalid or expired.");
+    for (const secret of this.refreshSecrets()) {
+      try {
+        return jwt.verify(token, secret) as TokenPayload;
+      } catch {
+        continue;
+      }
     }
+    throw new UnauthorizedException("Refresh token is invalid or expired.");
   }
 
   private async issueSession(userId: string, response: CookieResponse) {
@@ -239,11 +286,26 @@ export class AuthService {
       path: "/",
       maxAge: REFRESH_TTL_SECONDS * 1000
     });
+    response.cookie(csrfCookieName, this.makeOpaqueToken(), {
+      httpOnly: false,
+      secure,
+      sameSite: "lax",
+      path: "/",
+      maxAge: REFRESH_TTL_SECONDS * 1000
+    });
+
+    return {
+      accessToken,
+      refreshToken,
+      accessTokenExpiresInSeconds: ACCESS_TTL_SECONDS,
+      refreshTokenExpiresInSeconds: REFRESH_TTL_SECONDS
+    };
   }
 
   private clearAuthCookies(response: CookieResponse) {
     response.clearCookie(ACCESS_COOKIE, { path: "/" });
     response.clearCookie(REFRESH_COOKIE, { path: "/" });
+    response.clearCookie(csrfCookieName, { path: "/" });
   }
 
   private async toAuthUser(userId: string) {
@@ -280,5 +342,27 @@ export class AuthService {
 
   private refreshSecret() {
     return process.env.JWT_REFRESH_SECRET ?? "local-refresh-secret-change-me";
+  }
+
+  private accessSecrets() {
+    return [this.accessSecret(), process.env.JWT_PREVIOUS_ACCESS_SECRET].filter(Boolean) as string[];
+  }
+
+  private refreshSecrets() {
+    return [this.refreshSecret(), process.env.JWT_PREVIOUS_REFRESH_SECRET].filter(Boolean) as string[];
+  }
+
+  private async assertNotLocked(email: string) {
+    if (await this.lockout.isLocked(email)) {
+      throw new UnauthorizedException("Too many failed login attempts. Try again later.");
+    }
+  }
+
+  private async recordLoginFailure(email: string) {
+    await this.lockout.recordFailure(email);
+  }
+
+  private async clearLoginFailures(email: string) {
+    await this.lockout.clear(email);
   }
 }

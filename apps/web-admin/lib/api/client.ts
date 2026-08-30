@@ -9,7 +9,7 @@ export async function apiGet<T>(path: string): Promise<ApiResult<T>> {
     const response = await fetch(`${baseUrl}${path}`, { headers: await apiHeaders(), cache: "no-store" });
 
     if (!response.ok) {
-      return { error: `Request failed with status ${response.status}` };
+      return { error: await apiError(response) };
     }
 
     return { data: (await response.json()) as T };
@@ -27,7 +27,7 @@ export async function apiPost<T, TBody = unknown>(path: string, body: TBody): Pr
     });
 
     if (!response.ok) {
-      return { error: `Request failed with status ${response.status}` };
+      return { error: await apiError(response) };
     }
 
     return { data: (await response.json()) as T };
@@ -45,7 +45,7 @@ export async function apiPatch<T, TBody = unknown>(path: string, body: TBody): P
     });
 
     if (!response.ok) {
-      return { error: `Request failed with status ${response.status}` };
+      return { error: await apiError(response) };
     }
 
     return { data: (await response.json()) as T };
@@ -58,11 +58,11 @@ export async function apiDelete<T>(path: string): Promise<ApiResult<T>> {
   try {
     const response = await fetch(`${baseUrl}${path}`, {
       method: "DELETE",
-      headers: await apiHeaders()
+      headers: await apiHeaders(true)
     });
 
     if (!response.ok) {
-      return { error: `Request failed with status ${response.status}` };
+      return { error: await apiError(response) };
     }
 
     return { data: (await response.json()) as T };
@@ -71,8 +71,22 @@ export async function apiDelete<T>(path: string): Promise<ApiResult<T>> {
   }
 }
 
+async function apiError(response: Response) {
+  try {
+    const body = (await response.json()) as { message?: string; error?: string };
+    const message = body.message ?? body.error;
+    if (response.status === 403 && message?.toLowerCase().includes("upgrade")) {
+      return `${message} Visit Billing to upgrade your plan.`;
+    }
+    return message ?? `Request failed with status ${response.status}`;
+  } catch {
+    return `Request failed with status ${response.status}`;
+  }
+}
+
 async function apiHeaders(json = false): Promise<HeadersInit> {
   const cookieStore = await cookies();
+  const csrfToken = cookieStore.get("closira_csrf")?.value;
   const cookieHeader = cookieStore
     .getAll()
     .map((cookie) => `${cookie.name}=${cookie.value}`)
@@ -81,6 +95,7 @@ async function apiHeaders(json = false): Promise<HeadersInit> {
   return {
     Accept: "application/json",
     ...(json ? { "Content-Type": "application/json" } : {}),
+    ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
     ...(cookieHeader ? { Cookie: cookieHeader } : {})
   };
 }

@@ -4,6 +4,7 @@ export type WardrobeImage = {
   alt: string;
   gradient: string;
   url?: string | null;
+  isPrimary: boolean;
 };
 
 export type Category = {

@@ -1,6 +1,7 @@
 import { Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { WardrobeImage } from "@/components/wardrobe/wardrobe-image";
 import type { AiStylistRecommendation } from "@/types/ai";
 
 export function AiRecommendationCard({ recommendation }: { recommendation: AiStylistRecommendation }) {
@@ -25,12 +26,11 @@ export function AiRecommendationCard({ recommendation }: { recommendation: AiSty
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         {recommendation.items.map((item) => (
-          <div key={item.id} className={`rounded-lg bg-gradient-to-br ${item.images[0]?.gradient ?? "from-ivory-100 to-rose-100"} p-3`}>
+          <WardrobeImage key={item.id} src={item.images[0]?.url} alt={item.images[0]?.alt ?? item.title} gradient={item.images[0]?.gradient} className="rounded-lg p-3">
             <div className="rounded-md bg-white/60 p-3 text-xs font-semibold text-charcoal">{item.title}</div>
-          </div>
+          </WardrobeImage>
         ))}
       </div>
     </Card>
   );
 }
-

@@ -1,0 +1,3 @@
+id,title,description,image_url,path,license_family,license_url,source,author,consent_id,labels,tags
+owned-look-001,Ivory linen blazer,Owned studio product shot,,/absolute/path/to/ivory-linen-blazer.jpg,owned_catalog,,Closira Studio,Closira,,"{""category"":""Formal Wear"",""primary_color"":""Ivory"",""occasion"":""Office"",""style"":""Minimal""}","[""office"",""linen"",""neutral""]"
+opt-in-wardrobe-001,Rose satin dress,User opt-in wardrobe image,,/absolute/path/to/rose-satin-dress.jpg,user_opt_in,,Closira User Upload,,consent_123,"{""category"":""Dress"",""primary_color"":""Rose"",""occasion"":""Wedding"",""style"":""Elegant""}","[""wedding"",""rose"",""evening""]"

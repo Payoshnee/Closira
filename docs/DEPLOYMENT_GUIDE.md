@@ -24,13 +24,20 @@ Pipeline stages: install, lint, typecheck, test, build, migration check, contain
 
 Secrets are managed by deployment platform secret storage. Required groups include database, Redis, JWT, object storage, AI service URL, email provider, monitoring, and payment provider.
 
+Verify auth and billing secrets from staging before production promotion:
+
+```bash
+TEST_EMAIL_TO=you@example.com infra/scripts/verify-smtp.sh
+API_BASE_URL=https://staging-api.example.com/api/v1 infra/scripts/verify-billing-gateways.sh stripe
+```
+
 ## Logging and Monitoring
 
 Use structured logs, request IDs, error tracking, service health endpoints, queue metrics, AI job metrics, storage usage alerts, and database monitoring.
 
 ## Backups
 
-Automated PostgreSQL backups, tested restore process, object storage lifecycle policy, and retention rules. Backup access is restricted.
+Automated PostgreSQL backups, tested restore process, object storage lifecycle policy, and retention rules. Backup access is restricted. Use `docs/DATABASE_OPERATIONS_RUNBOOK.md` for migration, backup, restore, and retention commands.
 
 ## Rollback
 

@@ -3,8 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getWardrobeItem } from "@/lib/api/wardrobe";
-import { archiveWardrobeItem, markWardrobeItemWorn, toggleWardrobeFavorite } from "@/lib/actions/wardrobe";
+import { archiveWardrobeItem, deleteWardrobeImage, markWardrobeItemWorn, setPrimaryWardrobeImage, toggleWardrobeFavorite } from "@/lib/actions/wardrobe";
 import { ImageUploadControl } from "@/components/wardrobe/image-upload-control";
+import { WardrobeImage } from "@/components/wardrobe/wardrobe-image";
 
 export default async function WardrobeItemPage({ params }: { params: Promise<{ itemId: string }> }) {
   const { itemId } = await params;
@@ -17,11 +18,11 @@ export default async function WardrobeItemPage({ params }: { params: Promise<{ i
   return (
     <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
       <Card className="overflow-hidden">
-        <div className={`aspect-[4/5] bg-gradient-to-br ${item.images[0]?.gradient ?? "from-ivory-100 to-rose-100"} p-6`}>
+        <WardrobeImage src={item.images[0]?.url} alt={item.images[0]?.alt ?? item.title} gradient={item.images[0]?.gradient} className="aspect-[4/5] p-6">
           <div className="h-full rounded-lg border border-white/60 bg-white/32 p-4">
             <Badge>{item.categoryName}</Badge>
           </div>
-        </div>
+        </WardrobeImage>
       </Card>
       <div className="space-y-5">
         <div>
@@ -56,6 +57,37 @@ export default async function WardrobeItemPage({ params }: { params: Promise<{ i
             {item.tags.map((tag) => (
               <Badge key={tag.id}>{tag.name}</Badge>
             ))}
+          </div>
+        </Card>
+        <Card className="p-5">
+          <h2 className="text-lg font-semibold text-charcoal">Images</h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {item.images.length ? (
+              item.images.map((image) => (
+                <div key={image.id} className="rounded-lg border border-stone-200 bg-white p-3">
+                  <WardrobeImage src={image.url} alt={image.alt} gradient={image.gradient} className="aspect-[4/5] rounded-md" />
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <Badge>{image.isPrimary ? "Primary" : "Image"}</Badge>
+                    <div className="flex gap-2">
+                      {!image.isPrimary ? (
+                        <form action={setPrimaryWardrobeImage.bind(null, item.id, image.id)}>
+                          <button className="rounded-md border border-stone-300 px-3 py-1.5 text-xs font-semibold text-charcoal hover:bg-ivory-100" type="submit">
+                            Make primary
+                          </button>
+                        </form>
+                      ) : null}
+                      <form action={deleteWardrobeImage.bind(null, item.id, image.id)}>
+                        <button className="rounded-md border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50" type="submit">
+                          Delete
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-stone-600">No uploaded images yet.</p>
+            )}
           </div>
         </Card>
         <div className="flex flex-col gap-3 sm:flex-row">

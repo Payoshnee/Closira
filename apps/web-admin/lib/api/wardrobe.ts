@@ -19,12 +19,12 @@ export async function listWardrobeItems(filters: WardrobeFilters = {}): Promise<
 
   const query = params.toString();
   const result = await apiGet<WardrobeListResponse>(`/wardrobe/items${query ? `?${query}` : ""}`);
-  return result.data?.items ?? fallbackWardrobeItems(filters);
+  return result.data?.items.map(withPrivateImageUrls) ?? fallbackWardrobeItems(filters);
 }
 
 export async function getWardrobeItem(id: string): Promise<WardrobeItem | null> {
   const result = await apiGet<WardrobeItem>(`/wardrobe/items/${id}`);
-  return result.data ?? mockWardrobeItems.find((item) => item.id === id) ?? null;
+  return result.data ? withPrivateImageUrls(result.data) : mockWardrobeItems.find((item) => item.id === id) ?? null;
 }
 
 export async function getWardrobeSummary(): Promise<WardrobeSummary> {
@@ -47,4 +47,14 @@ function fallbackWardrobeItems(filters: WardrobeFilters = {}) {
 
     return matchesQuery && matchesCategory && matchesTag && matchesFavorite && matchesNeverWorn;
   });
+}
+
+function withPrivateImageUrls(item: WardrobeItem): WardrobeItem {
+  return {
+    ...item,
+    images: item.images.map((image) => ({
+      ...image,
+      url: `/api/wardrobe/items/${item.id}/images/${image.id}/read`
+    }))
+  };
 }

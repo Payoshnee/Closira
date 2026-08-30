@@ -14,7 +14,7 @@ export async function listBillingPlans(): Promise<BillingPlan[]> {
 
 export async function listPaymentRecords(): Promise<PaymentRecord[]> {
   const result = await apiGet<PaymentRecord[]>("/billing/invoices");
-  return result.data ?? mockPaymentRecords;
+  return result.data?.map(withApiDownloadUrl) ?? mockPaymentRecords;
 }
 
 export async function listBillingGateways(): Promise<BillingGateway[]> {
@@ -30,4 +30,12 @@ export async function createCheckoutSession(body: { plan: string; gateway: strin
 export async function createBillingPortalSession(): Promise<{ gateway: string; portalUrl: string } | null> {
   const result = await apiPost<{ gateway: string; portalUrl: string }, Record<string, never>>("/billing/portal", {});
   return result.data ?? null;
+}
+
+function withApiDownloadUrl(payment: PaymentRecord): PaymentRecord {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api/v1";
+  return {
+    ...payment,
+    downloadUrl: payment.downloadUrl?.startsWith("/api/v1") ? `${apiUrl.replace(/\/api\/v1$/, "")}${payment.downloadUrl}` : payment.downloadUrl
+  };
 }
