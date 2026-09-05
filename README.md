@@ -1,145 +1,425 @@
 # Closira
 
-AI-powered digital wardrobe and virtual styling assistant.
+> **A privacy-first, AI-assisted digital wardrobe, outfit planner, analytics platform, and smart shopping companion.**
 
-Closira helps users digitize their wardrobe, remember what they own, avoid duplicate purchases, build outfits, plan looks for events, and later preview clothes, jewelry, lipstick, makeup, and accessories on personal photos with explicit consent.
+Closira turns a physical wardrobe into a searchable and measurable digital system. Users can catalog clothes and accessories, build outfits from items they own, plan looks, record wear, understand wardrobe utility, and request context-aware styling or purchase advice.
 
-## Product Vision
+This is a multi-client, service-oriented product—not only an AI or UI demo. It includes a Next.js product experience, Flutter client, NestJS API, FastAPI model service, PostgreSQL/pgvector, Redis, private image storage, billing abstractions, security controls, monitoring, CI, and operational tooling.
 
-Closira is a production-grade mobile-first wardrobe platform for fashion-focused users who own many clothes and need a private, intelligent system for organization and styling. The product must be dynamic at every phase: real authentication, real database persistence, real file uploads, real APIs, real validation, real state management, and no fake buttons or placeholder-only user flows.
+> **Maturity:** core web/API wardrobe workflows are implemented. Some production integrations require external credentials; native AI is currently a measured baseline; mobile is an early implementation; and virtual try-on is explicitly roadmap work. See [Implementation status](#implementation-status).
 
-## Problem
+## Contents
 
-Users often forget what they own, repeat similar purchases, struggle to combine items, underuse clothes, and spend too much time choosing outfits for college, office, weddings, festivals, travel, parties, and daily wear.
+- [Product](#product)
+- [Features](#features)
+- [Differentiation and novelty](#differentiation-and-novelty)
+- [System architecture](#system-architecture)
+- [How it works](#how-it-works)
+- [Data and AI architecture](#data-and-ai-architecture)
+- [Security, reliability, and scale](#security-reliability-and-scale)
+- [Technology stack](#technology-stack)
+- [Repository structure](#repository-structure)
+- [API](#api)
+- [Implementation status](#implementation-status)
+- [Local development](#local-development)
+- [Testing and deployment](#testing-and-deployment)
+- [Portfolio and placement showcase](#portfolio-and-placement-showcase)
+- [Roadmap and documentation](#roadmap-and-documentation)
 
-## Solution
+## Product
 
-Closira creates a searchable wardrobe inventory with images, metadata, usage history, outfit planning, AI tagging, similarity search, recommendations, and future virtual try-on. AI suggestions must use the user's actual wardrobe unless explicitly marked as shopping suggestions.
+### One-line pitch
 
-## Core Features
+Closira helps people wear more of what they own, create better outfits, and make informed shopping decisions using a private, structured wardrobe and explainable AI assistance.
 
-- Authentication, refresh tokens, email verification, forgot password, secure logout, and account deletion.
-- User profile with style preferences, favorite colors, optional measurements, privacy, and notification settings.
-- Digital wardrobe with front, back, and optional close-up images.
-- Category, subcategory, material, color, season, occasion, style, usage, and custom tag management.
-- Search, filters, sorting, favorite items, and purchase/usage metadata.
-- Outfit builder, outfit duplication, favorite outfits, mark-worn flow, and outfit calendar.
-- Usage analytics including cost per wear, unused items, never worn items, and wardrobe value.
-- AI auto tagging, image embeddings, similar item detection, outfit recommendations, and smart shopping checks.
-- Future virtual try-on behind consent and feature flags until it generates real previews.
-- Admin dashboard for users, categories, tags, storage, AI health, and app analytics.
+### The problem
 
-## Technology Stack
+People forget items they own, repeat purchases, underuse clothes, struggle to coordinate complete looks, and rarely know wardrobe value or cost per wear. Generic styling AI also lacks a reliable boundary between owned products and imagined recommendations. Personal wardrobe and body images introduce additional privacy risks.
 
-- Mobile: Flutter, Dart, Riverpod, GoRouter, Dio, Flutter Secure Storage, Cached Network Image, Image Picker, camera support.
-- Web admin: Next.js, React, TypeScript, Tailwind CSS, shadcn/ui, TanStack Query, React Hook Form, Zod.
-- API: NestJS, TypeScript, Prisma, PostgreSQL, Redis, BullMQ, JWT, RBAC.
-- AI service: Python FastAPI, PyTorch, OpenCV, Pillow, CLIP or modern embedding model, pgvector.
-- Storage: Cloudflare R2 or AWS S3 with signed URLs and private user folders.
-- DevOps: Docker, Docker Compose, GitHub Actions, Nginx or Caddy, environment-based config, logging, monitoring, backups.
-- Testing: Jest, Supertest, Flutter tests, Playwright, Pytest, API collection.
+### The solution
 
-## Repository Layout
+Closira connects three questions normally spread across separate tools:
+
+1. **What do I own?** A visual inventory with metadata, search, filters, and private images.
+2. **What should I wear?** Outfit building, calendar planning, usage history, and wardrobe-aware recommendations.
+3. **Should I buy this?** Similarity, duplicate-risk, compatibility, and wardrobe-gap reasoning.
+
+### Intended users
+
+- Students and professionals planning daily or weekly looks.
+- Wedding shoppers coordinating clothing, jewelry, footwear, and accessories.
+- Fashion-conscious users seeking better wardrobe utilization.
+- Creators and stylists organizing repeatable looks.
+- Future boutique, stylist, and brand partners.
+
+### Expected product impact
+
+| Problem | Capability | Outcome |
+| --- | --- | --- |
+| Forgotten items | Searchable visual wardrobe | Better visibility |
+| Duplicate purchases | Embeddings and shopping checks | Lower duplicate risk |
+| Outfit indecision | Owned-item-first styling | Faster decisions |
+| Underused clothing | Wear logs and cost-per-wear data | Better utilization |
+| Disconnected event planning | Outfit calendar | Fewer last-minute decisions |
+| Sensitive imagery | Private storage and consent | Greater user control |
+
+## Features
+
+### Identity and account lifecycle
+
+- Registration, login, logout, access/refresh sessions, email verification, and password reset paths.
+- Browser cookie and mobile bearer-token flows.
+- Persisted, hashed refresh tokens and session revocation.
+- Redis-backed failed-login lockout with development fallback.
+- User, admin, and super-admin roles.
+- Account anonymization/deletion flow and audit record.
+
+### Digital wardrobe
+
+- Wardrobe item creation, update, archive, favorite, search, filtering, sorting, and pagination.
+- Categories and custom tags.
+- Color, secondary colors, size, material, pattern, fit, season, occasion, brand, price, currency, notes, and purchase URL.
+- Multiple private images, primary-image selection, and deletion.
+- Signed upload/read URLs for local or S3-compatible storage.
+- Validation, re-encoding, metadata stripping, and WebP thumbnail/card/detail variants.
+- Mark-worn events, last-worn time, and wear counters.
+
+### Outfits, calendar, and analytics
+
+- Persistent outfit creation with top, bottom, dress, outerwear, shoes, bag, accessory, and other slots.
+- Outfit detail, editing, duplication, favorites, occasion, season, and visibility.
+- Calendar plans with time, location, notes, lifecycle status, and basic conflict detection.
+- Usage logs supporting wardrobe totals, value, most/least used items, stale items, and cost per wear.
+
+### AI and shopping intelligence
+
+- Clothing analysis and editable tagging suggestions.
+- 768-dimensional embedding contract and pgvector-ready similarity.
+- Outfit recommendations supplied with actual wardrobe context.
+- Shopping checks with compatibility and duplicate-risk outputs.
+- Native, OpenAI-compatible, Anthropic, Gemini, Azure OpenAI, Ollama, and custom provider types.
+- AI jobs record provider, status, confidence, result, errors, and timing.
+- Dataset normalization, split, embedding, baseline training, and evaluation scripts.
+- Safe deterministic fallback when model inference is unavailable.
+
+### Billing, administration, and operations
+
+- Free, Pro, Stylist, and Enterprise subscription model.
+- Entitlements for item count, storage, AI usage, and custom-provider access.
+- Gateway-neutral billing, subscriptions, invoices, checkout, portal, and webhook paths.
+- Admin users/roles, AI jobs, storage, health, reports, metrics, and audit logs.
+- Health/liveness/readiness, Prometheus-style metrics, request IDs, structured logs, and optional error webhook.
+- Backup, restore, retention, object-deletion, SMTP, storage, and billing verification scripts.
+
+## Differentiation and novelty
+
+Closira does not claim that wardrobe apps are globally unique. Its novelty lies in one coherent feedback loop:
 
 ```text
-closira/
-  apps/
-    mobile/        Flutter app
-    web-admin/     Next.js admin dashboard
-  services/
-    api/           NestJS REST API
-    ai/            FastAPI AI service
-  packages/
-    shared-types/  Shared TypeScript contracts
-    config/        Shared config and lint presets
-  infra/
-    docker/        Docker assets
-    nginx/         Reverse proxy config
-    database/      SQL, migrations notes, seed data
-    scripts/       Operational scripts
-  storage/
-    local-dev-only/
-  tests/
-    api/
-    e2e/
-    mobile/
-    web/
-  docs/
+Catalog owned items → create outfits → schedule and wear them
+        ↑                                      ↓
+Improve purchase decisions ← measure utility and wardrobe gaps
 ```
 
-See [docs/FOLDER_STRUCTURE.md](docs/FOLDER_STRUCTURE.md) for the full ownership map.
+Key differentiators:
 
-## Environment Variables
+- **Owned-item-first AI:** outside products cannot be represented as owned; shopping suggestions must remain separate.
+- **Wardrobe intelligence:** items connect to outfits, calendar events, wear evidence, price, embeddings, and AI jobs—not just a photo gallery.
+- **Pre-purchase reasoning:** candidate purchases can be compared with owned items and wardrobe gaps.
+- **Privacy by architecture:** user scoping, private storage, expiring URLs, sanitized variants, consent, and deletion are technical controls.
+- **Measured AI boundaries:** confidence, fallback state, editable outputs, and manual workflows prevent model failure from becoming product failure.
+- **Vendor independence:** both AI and billing use provider abstractions.
+- **Practical sustainability:** wear frequency, unused inventory, and cost per wear turn reuse into a measurable behavior.
 
-Phase 1 will introduce `.env.example` files for each runtime. Required groups:
+## System architecture
 
-- API: `DATABASE_URL`, `REDIS_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `AI_SERVICE_URL`.
-- AI: `DATABASE_URL`, `MODEL_CACHE_DIR`, `EMBEDDING_MODEL_NAME`, `API_SHARED_SECRET`.
-- Web admin: `NEXT_PUBLIC_API_URL`.
-- Mobile: API base URL supplied by build flavor or runtime config.
+```mermaid
+flowchart LR
+    U[User] --> W[Next.js Web]
+    U --> M[Flutter Mobile]
+    W -->|REST / HTTPS| API[NestJS API]
+    M -->|REST / HTTPS| API
+    API -->|Prisma| DB[(PostgreSQL + pgvector)]
+    API --> R[(Redis)]
+    API -->|signed operations| S[(Private Object Storage)]
+    W -. direct upload .-> S
+    M -. direct upload .-> S
+    API -->|internal HTTP| AI[FastAPI AI]
+    AI --> MODEL[Baseline / Embedding Model]
+    API --> MAIL[SMTP]
+    API --> PAY[Billing Gateway]
+    API --> OBS[Logs / Metrics / Error Tracking]
+```
 
-No production secret may be committed.
+Closira is a **modular monorepo with independently deployable services**. Transactional domains stay in one NestJS API where ownership rules and relational consistency matter. AI is separated because Python/model dependencies, scaling, latency, and failure modes differ. PostgreSQL is authoritative; Redis, model output, and object storage never replace ownership or business state.
 
-## Local Development Flow
+| Component | Responsibility |
+| --- | --- |
+| Next.js web | Marketing, authenticated dashboard, browser API adapters, private-image proxy routes |
+| Flutter | Device capture, secure token storage, wardrobe/outfit/AI/profile mobile flows |
+| NestJS | Authentication, policy, validation, persistence, storage orchestration, entitlements |
+| FastAPI | Analysis, embeddings, recommendation, shopping inference, model lifecycle |
+| PostgreSQL | Users, sessions, wardrobe graph, jobs, billing, audit state |
+| pgvector | Embedding storage and semantic retrieval |
+| Redis | Distributed login protection and queue/cache foundation |
+| Object storage | Durable original and processed image bytes |
 
-Phase 1 foundation:
+## How it works
 
-1. Copy environment examples into local `.env` files.
-2. Start PostgreSQL, Redis, object storage emulator, API, AI service, and web admin through Docker Compose.
-3. Run Prisma migrations.
-4. Start Flutter with the local API base URL.
-5. Verify `/health` for API and AI service.
+### Authentication
 
-Current commands:
+Passwords are hashed. Login creates short-lived access and longer-lived refresh credentials; only the refresh-token hash is persisted. Browsers use HttpOnly cookies plus CSRF validation for mutations, while mobile stores tokens in secure platform storage. Refresh rotation, logout, deletion, and previous-secret support provide revocation and controlled secret rotation.
+
+### Private image upload
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Client
+    participant API
+    participant DB as PostgreSQL
+    participant Store as Object Storage
+    participant Worker as Image Processor
+    participant AI
+    User->>Client: Add item and image
+    Client->>API: Create wardrobe item
+    API->>DB: Save user-scoped record
+    Client->>API: Request upload URL
+    API->>DB: Create image record
+    API-->>Client: Short-lived signed URL
+    Client->>Store: Upload directly
+    Client->>API: Finalize image
+    API->>Worker: Validate and process
+    Worker->>Store: Write WebP variants
+    Worker->>DB: Save image metadata
+    API->>AI: Optional analysis/embedding
+    AI-->>API: Output + confidence
+    API->>DB: Save job/result/vector
+```
+
+Direct upload avoids routing large files through the API. The API still owns authorization, storage keys, constraints, expiry, and finalization.
+
+### Outfit and recommendation flows
+
+The API verifies ownership of every item before persisting outfit-slot relationships. Calendar plans reference saved outfits. Mark-worn operations create usage evidence. For AI requests, entitlements are checked, a bounded wardrobe context is loaded, a provider-independent request is executed, and job/confidence/failure metadata is saved. A provider failure can fall back safely without blocking manual wardrobe use.
+
+## Data and AI architecture
+
+```mermaid
+erDiagram
+    USER ||--o| USER_PROFILE : has
+    USER ||--o{ SESSION : owns
+    USER ||--o{ WARDROBE_ITEM : owns
+    WARDROBE_ITEM ||--o{ WARDROBE_IMAGE : has
+    WARDROBE_ITEM ||--o{ WARDROBE_TAG : tagged
+    TAG ||--o{ WARDROBE_TAG : labels
+    USER ||--o{ OUTFIT : creates
+    OUTFIT ||--o{ OUTFIT_ITEM : contains
+    WARDROBE_ITEM ||--o{ OUTFIT_ITEM : used_in
+    OUTFIT ||--o{ CALENDAR_PLAN : scheduled
+    WARDROBE_ITEM ||--o{ WARDROBE_USAGE_LOG : records
+    WARDROBE_ITEM ||--o{ IMAGE_EMBEDDING : represented_by
+    USER ||--o{ AI_JOB : requests
+    USER ||--o{ SUBSCRIPTION : holds
+    SUBSCRIPTION ||--o{ INVOICE : produces
+```
+
+Design choices include UUID keys, case-insensitive unique emails, explicit ownership, lifecycle enums, indexed user/status/date queries, relational join tables, audit timestamps, controlled JSON extensibility, and `vector(768)` embeddings.
+
+| AI module | Result | Current reality |
+| --- | --- | --- |
+| Clothing analysis | Category, colors, tags, confidence | Provider-aware plus baseline/fallback |
+| Embedding | 768-dimensional vector | OpenCLIP-capable offline path; dev fallback |
+| Similarity | Ranked owned items | Data/index/search path exists; needs real backfill/evaluation |
+| Outfit stylist | Items and explanation | Working API/job path; native quality is baseline |
+| Shopping check | Compatibility and duplicate risk | Working provider/native paths; ranking needs validation |
+| Virtual try-on | Generated preview | **Not released**; endpoint returns unavailable |
+
+AI must not invent owned items, should expose confidence/fallbacks, must allow correction, and cannot use personal photos for training without opt-in.
+
+## Security, reliability, and scale
+
+Implemented controls include bcrypt password hashing, hashed refresh sessions, CSRF protection, Helmet, CORS allowlists, rate limits, Redis login lockout, global validation/whitelisting, role checks, user-scoped queries, signed media URLs, configurable upload limits, request IDs, exception filtering, audit logs, and consent fields.
+
+Health endpoints are `/api/v1/health`, `/health/live`, `/health/ready`, `/metrics`, plus AI `/health` on port `8000`.
+
+Production hardening still includes full DTO coverage, Redis-backed global rate limiting, final CSP, encrypted stored provider credentials, complete external-data deletion workers, centralized telemetry, security testing, and least-privilege infrastructure.
+
+The image worker is currently batch/command oriented. High-volume deployment should use BullMQ, SQS, or an equivalent durable queue with retries, idempotency, and dead-letter handling. Process-local metrics should be scraped/exported to a durable monitoring platform.
+
+## Technology stack
+
+| Layer | Technology |
+| --- | --- |
+| Web | Next.js 15, React 19, TypeScript, Tailwind CSS |
+| Web data/state | TanStack Query, Zustand, Zod |
+| Mobile | Flutter, Dart, Secure Storage, HTTP, Image Picker |
+| API | NestJS 10, TypeScript, Prisma 6 |
+| Data | PostgreSQL 16, pgvector, Redis 7 |
+| AI | FastAPI, Python, optional OpenCLIP |
+| Media | Sharp, local or S3-compatible/R2 storage |
+| Integrations | SMTP/Nodemailer, gateway-neutral billing |
+| Quality | Jest, Pytest, Playwright, Flutter Test |
+| Delivery | Docker Compose, GitHub Actions |
+
+## Repository structure
+
+```text
+Closira/
+├── apps/mobile/               # Flutter Android/iOS client
+├── apps/web-admin/            # Next.js public site and dashboard
+├── services/api/              # NestJS API, Prisma, workers
+├── services/ai/               # FastAPI and ML pipeline
+├── packages/shared-types/     # Shared TypeScript contracts
+├── packages/config/           # Shared configuration
+├── infra/database/            # PostgreSQL extension initialization
+├── infra/scripts/             # Operations and integration checks
+├── docs/                      # Product, architecture, security, runbooks
+├── docker-compose.yml
+├── setup.sh
+└── run.sh
+```
+
+## API
+
+All application routes use `/api/v1`.
+
+| Domain | Representative operations |
+| --- | --- |
+| Auth | register, login, refresh, logout, me, verify/reset, delete account |
+| Profile | retrieve and update current profile |
+| Wardrobe | CRUD, summary, favorite, archive, wear, image lifecycle |
+| Taxonomy | category and tag CRUD |
+| Outfits | list/detail/create/update/duplicate/favorite |
+| Calendar | list, summary, plan outfit, mark worn |
+| AI | settings, recommendations, shopping checks, analyze/embed/similar |
+| Analytics | wardrobe metrics |
+| Billing | plans, current, invoices, gateways, checkout, portal, webhooks |
+| Admin | metrics, health, users, roles, jobs, storage, reports, audit logs |
+
+See [API specification](docs/API_SPECIFICATION.md).
+
+## Implementation status
+
+| Area | Status | Notes |
+| --- | --- | --- |
+| Public/web product | **Implemented** | Marketing and authenticated dashboard routes exist |
+| Auth | **Implemented / integration pending** | Core sessions work; production SMTP and broader E2E remain |
+| Wardrobe | **Implemented** | Persistent CRUD, taxonomy, queries, favorite and wear flows |
+| Image pipeline | **Implemented / verification pending** | Local/S3-compatible; real production bucket requires validation |
+| Outfits | **Implemented** | Persistent slots, duplicate and favorite paths |
+| Calendar | **Partial** | Persistence/basic conflicts; richer views remain |
+| Analytics | **Partial** | Endpoint/UI exist; deeper definitions, tests, exports remain |
+| Provider AI | **Partial** | Multiple paths; encrypted user keys and integration tests remain |
+| Native AI | **Baseline** | Trainable scaffold, not production stylist quality |
+| Similarity | **Partial** | Vector contract/schema/path exist; backfill and ranking eval remain |
+| Billing | **Partial** | Entitlements/abstraction/UI exist; live gateway verification remains |
+| Admin | **Partial** | Core RBAC/views; granular permissions remain |
+| Flutter | **Early/partial** | Main flows started; device and release hardening remain |
+| Virtual try-on | **Roadmap** | No generated preview is claimed |
+| Operations | **Partial** | CI/scripts/health exist; managed deployment and drills remain |
+
+See the maintained [feature status matrix](docs/FEATURE_STATUS_MATRIX.md).
+
+## Local development
+
+### Prerequisites
+
+Node.js 22+, Python 3.12+, Docker Compose, and optionally Flutter/Ollama.
 
 ```bash
-npm install
-npm --workspace services/api run start
-npm --workspace apps/web-admin run dev
-PYTHONPATH=services/ai python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-cd apps/mobile && flutter run
+git clone <repository-url>
+cd Closira
+./setup.sh
 ```
 
-If port `3001` is already in use, run the API with `PORT=3011 npm --workspace services/api run start`.
+The setup script creates missing environment files, installs dependencies, starts PostgreSQL/Redis when available, migrates/seeds, trains/evaluates the baseline, and runs verification.
 
-## Production Deployment Flow
+Start infrastructure, then the applications:
 
-Production uses separately deployed mobile builds, web admin, NestJS API, FastAPI AI service, PostgreSQL with pgvector, Redis, private object storage, background workers, reverse proxy, CI/CD, migrations, logging, monitoring, and backups. See [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md).
+```bash
+./run.sh infra
+# in another terminal
+./run.sh all
+```
 
-## API Overview
+| Service | URL |
+| --- | --- |
+| Web | `http://localhost:3000` |
+| API | `http://localhost:3001/api/v1` |
+| AI | `http://localhost:8000` |
 
-The API is REST-first with authenticated user routes and admin-only routes. Major domains:
+Individual modes are `./run.sh web`, `api`, or `ai`; `./run.sh stop` stops development ports.
 
-- `/auth`
-- `/profile`
-- `/wardrobe`
-- `/categories`
-- `/tags`
-- `/outfits`
-- `/calendar`
-- `/ai`
-- `/analytics`
-- `/admin`
+Important environment groups are database/Redis, JWT secrets, CORS/rate limits, AI providers, storage/bucket credentials, SMTP, billing gateways, and monitoring. Start from [.env.example](.env.example); never deploy example secrets.
 
-See [docs/API_SPECIFICATION.md](docs/API_SPECIFICATION.md).
+## Testing and deployment
 
-## Database Overview
+```bash
+npm run lint
+npm run typecheck
+npm run test:api
+npm run build
+npm --workspace apps/web-admin run test:e2e
+PYTHONPATH=services/ai python3 -m pytest services/ai/tests
+(cd apps/mobile && flutter test)
+```
 
-PostgreSQL is the system of record. UUID primary keys, audit fields, soft deletes where appropriate, relational constraints, enum types, and indexes are required. pgvector stores wardrobe image embeddings for similarity. See [docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md).
+CI starts PostgreSQL/pgvector and Redis, deploys migrations, seeds, lints, type-checks, tests, and builds Node applications. A separate AI job trains/evaluates the baseline and runs Pytest.
 
-## AI Modules
+Production should use separately scalable web/API/AI containers, managed PostgreSQL and Redis, private object storage, TLS, secret management, a durable worker, centralized telemetry, gated migrations, automated backups, and tested restoration. Before release, verify SMTP, object storage, billing, authentication, upload/deletion, AI fallback, health checks, backup/restore, and JWT rotation.
 
-AI features are service-backed and must expose confidence, fallbacks, and user confirmation where needed. Released AI features must be clearly separated from future or feature-flagged features. See [docs/AI_MODULES.md](docs/AI_MODULES.md).
+## Portfolio and placement showcase
 
-## Testing Strategy
+Closira demonstrates product thinking and engineering across frontend, mobile, API design, relational modeling, AI integration, privacy, subscriptions, observability, and DevOps.
 
-Each phase must include unit, integration, API, UI, and manual QA coverage appropriate to its risk. A phase is not complete until tests pass and dynamic flows are verified. See [docs/TESTING_PLAN.md](docs/TESTING_PLAN.md).
+Strong interview discussion points:
 
-## Contribution Rules
+- Why transactional domains share a modular API while AI is independently deployed.
+- Why image bytes belong in object storage and metadata in PostgreSQL.
+- How signed direct uploads reduce API load without weakening authorization.
+- Why pgvector is appropriate before introducing a separate vector database.
+- How hashed rotating sessions enable revocation.
+- How provider abstractions reduce AI/payment lock-in.
+- Why confidence, fallbacks, and manual workflows are essential product behavior.
+- Where the batch worker stops scaling and how to introduce queues and idempotency.
 
-- Do not add fake UI, dead buttons, static-only pages, or demo-only services.
-- Every visible action must work or be hidden behind a feature flag.
-- All user data must come from authenticated APIs.
-- All image flows must be private by default.
-- Update documentation and `docs/CHANGELOG.md` after every phase.
-- Run tests before marking a phase complete.
+**Resume-ready summary:**
+
+> Designed and built Closira, a full-stack AI-assisted wardrobe platform using Next.js, Flutter, NestJS, FastAPI, PostgreSQL/pgvector, Redis, Prisma, and S3-compatible storage. Implemented secure sessions, user-scoped wardrobe/outfit workflows, signed image uploads and processing, vector-ready similarity, provider-agnostic AI and billing, entitlement enforcement, observability, CI, and operational runbooks.
+
+Suggested demo: register/login; upload an item; explain signed storage; search and mark worn; create/plan an outfit; inspect analytics; run an AI/shopping request and show confidence/fallback; then present the schema, monitoring, CI, and honest status table.
+
+## Roadmap and documentation
+
+Near-term priorities are broader DTO/E2E coverage, staging verification, durable image jobs, real embedding backfill/ranking evaluation, analytics reconciliation, and mobile completion. Medium-term work includes encrypted provider secrets, AI feedback/evaluation, reminders, granular permissions, centralized monitoring, and complete external deletion. Virtual try-on remains long-term until consent, safety, deletion, and quality requirements are proven.
+
+| Document | Purpose |
+| --- | --- |
+| [System architecture](docs/SYSTEM_ARCHITECTURE.md) | Components and runtime |
+| [Product requirements](docs/PRODUCT_REQUIREMENTS.md) | Users, use cases, plans, metrics |
+| [Feature status](docs/FEATURE_STATUS_MATRIX.md) | Detailed implementation truth |
+| [Database schema](docs/DATABASE_SCHEMA.md) | Data model |
+| [AI modules](docs/AI_MODULES.md) | AI contracts and guardrails |
+| [Security and privacy](docs/SECURITY_PRIVACY.md) | Protection and consent |
+| [Deployment guide](docs/DEPLOYMENT_GUIDE.md) | Environments and release |
+| [Auth runbook](docs/AUTH_SECURITY_RUNBOOK.md) | Authentication operations |
+| [Database runbook](docs/DATABASE_OPERATIONS_RUNBOOK.md) | Migration/backup/restore |
+| [Testing plan](docs/TESTING_PLAN.md) | Quality strategy |
+| [Roadmap](docs/ROADMAP.md) | Delivery sequence |
+
+## Contribution principles
+
+- No dead buttons, fake success, or unlabeled mock behavior.
+- Every visible action works or stays feature-flagged.
+- All user data is ownership-scoped; images are private by default.
+- Manual workflows survive AI failure.
+- Roadmap features are labeled honestly.
+- Changes include appropriate tests and documentation.
+- Secrets and unlicensed training data are never committed.
+
+## License
+
+No open-source license is currently declared. Unless the owner adds one, treat this source as **all rights reserved**.
+
+<p align="center"><strong>Closira — know your wardrobe, style what you own, and shop with context.</strong></p>
