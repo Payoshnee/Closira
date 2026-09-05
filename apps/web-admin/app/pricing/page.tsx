@@ -7,7 +7,7 @@ import { routes } from "@/lib/routes";
 
 export default function PricingPage() {
   return (
-    <SimplePage eyebrow="Pricing" title="Simple plans for early wardrobe builders." description="Closira is in foundation stage. Join early access now and get notified as premium AI tools become available.">
+    <SimplePage eyebrow="Pricing" title="Simple plans for early wardrobe builders." description="Clorisa is in foundation stage. Join early access now and get notified as premium AI tools become available.">
       <div className="grid gap-4 md:grid-cols-2">
         {pricingPlans.map((plan) => (
           <Card key={plan.name} className="p-6">

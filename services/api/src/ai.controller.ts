@@ -18,7 +18,7 @@ type AiProviderSettings = {
 };
 
 const supportedProviders: AiProviderSettings["supportedProviders"] = [
-  { id: "native", name: "Closira Native AI", requiresApiKey: false },
+  { id: "native", name: "Clorisa Native AI", requiresApiKey: false },
   { id: "openai", name: "ChatGPT / OpenAI", requiresApiKey: true },
   { id: "anthropic", name: "Claude / Anthropic", requiresApiKey: true },
   { id: "gemini", name: "Gemini / Google", requiresApiKey: true },
@@ -215,7 +215,7 @@ export class AiController {
       `INSERT INTO image_embeddings (item_id, image_id, model, dimension, embedding) VALUES ($1::uuid, $2::uuid, $3, 768, $4::vector)`,
       item.id,
       item.images[0]?.id ?? null,
-      result.model ?? "closira-native-embedding-v0",
+      result.model ?? "clorisa-native-embedding-v0",
       `[${vector.join(",")}]`
     );
     await this.finishJob(job.id, result, 0.8, Boolean(result.fallback_used));
@@ -281,7 +281,7 @@ export class AiController {
       (await this.prisma.aiProviderSetting.upsert({
         where: { userId_provider: { userId, provider: "NATIVE" } },
         update: { isEnabled: true, isDefault: true },
-        create: { userId, provider: "NATIVE", displayName: "Closira Native AI", isEnabled: true, isDefault: true, model: "closira-baseline" }
+        create: { userId, provider: "NATIVE", displayName: "Clorisa Native AI", isEnabled: true, isDefault: true, model: "clorisa-baseline" }
       }));
     return setting;
   }
@@ -626,7 +626,7 @@ function toWebProvider(provider: AiProviderType): WebProvider {
 }
 
 function forcedAiProvider() {
-  const value = process.env.CLOSIRA_FORCE_AI_PROVIDER?.trim().toLowerCase();
+  const value = process.env.CLORISA_FORCE_AI_PROVIDER?.trim().toLowerCase();
   if (!value) return undefined;
   return toDbProvider(value as WebProvider);
 }
@@ -649,7 +649,7 @@ function apiKeyFor(provider: AiProviderType) {
 
 function defaultModelFor(provider: AiProviderType) {
   const modelByProvider: Record<AiProviderType, string> = {
-    NATIVE: "closira-baseline",
+    NATIVE: "clorisa-baseline",
     OPENAI: "gpt-4o-mini",
     ANTHROPIC: "claude-3-5-sonnet-latest",
     GEMINI: "gemini-1.5-pro",
@@ -662,7 +662,7 @@ function defaultModelFor(provider: AiProviderType) {
 
 function defaultVisionModelFor(provider: AiProviderType) {
   const modelByProvider: Record<AiProviderType, string> = {
-    NATIVE: "closira-baseline",
+    NATIVE: "clorisa-baseline",
     OPENAI: "gpt-4o-mini",
     ANTHROPIC: "claude-3-5-sonnet-latest",
     GEMINI: "gemini-1.5-pro",
@@ -718,7 +718,7 @@ function parseAiJson(text: string) {
 
 function stylistPrompt(prompt: string | undefined, occasion: string | undefined, wardrobeItems: unknown[]) {
   return JSON.stringify({
-    instruction: "You are Closira AI stylist. Return only JSON with title, occasion, explanation, confidence. Style only from owned wardrobe items.",
+    instruction: "You are Clorisa AI stylist. Return only JSON with title, occasion, explanation, confidence. Style only from owned wardrobe items.",
     userPrompt: prompt,
     occasion,
     wardrobeItems
@@ -727,7 +727,7 @@ function stylistPrompt(prompt: string | undefined, occasion: string | undefined,
 
 function shoppingPrompt(itemName: string, occasion: string | undefined, wardrobeItems: unknown[]) {
   return JSON.stringify({
-    instruction: "You are Closira shopping assistant. Return only JSON with recommendation, compatibilityScore, duplicateRisk, explanation. recommendation must be buy, skip, or consider.",
+    instruction: "You are Clorisa shopping assistant. Return only JSON with recommendation, compatibilityScore, duplicateRisk, explanation. recommendation must be buy, skip, or consider.",
     itemName,
     occasion,
     wardrobeItems
@@ -736,7 +736,7 @@ function shoppingPrompt(itemName: string, occasion: string | undefined, wardrobe
 
 function clothingAnalysisPrompt(item: Prisma.WardrobeItemGetPayload<{ include: typeof itemInclude }>) {
   return JSON.stringify({
-    instruction: "You are Closira clothing image analyst. Analyze the wardrobe item image and return only JSON with detected_category, detected_colors, suggested_tags, material, pattern, style_notes, confidence. suggested_tags must be short lowercase wardrobe tags. Do not invent personal traits or sensitive attributes.",
+    instruction: "You are Clorisa clothing image analyst. Analyze the wardrobe item image and return only JSON with detected_category, detected_colors, suggested_tags, material, pattern, style_notes, confidence. suggested_tags must be short lowercase wardrobe tags. Do not invent personal traits or sensitive attributes.",
     item: {
       name: item.name,
       color: item.color,

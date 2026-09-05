@@ -4,7 +4,7 @@ Last updated: 2026-08-30
 
 ## Goal
 
-Closira should support a native AI mode and custom user-connected AI providers that can perform the same AI tasks:
+Clorisa should support a native AI mode and custom user-connected AI providers that can perform the same AI tasks:
 
 - clothing image analysis
 - auto-tagging
@@ -40,11 +40,11 @@ Built:
 - Sample training manifest:
   - `services/ai/data/sample_manifest.jsonl`
 - Local baseline artifact:
-  - `services/ai/models/closira-baseline.json`
+  - `services/ai/models/clorisa-baseline.json`
 - Frontend AI settings route:
   - `/dashboard/ai-settings`
 - Supported provider options in the UI:
-  - Closira Native AI
+  - Clorisa Native AI
   - ChatGPT / OpenAI
   - Claude / Anthropic
   - Gemini / Google
@@ -84,14 +84,14 @@ The current provider settings flow is a real UI and API contract, and hosted LLM
 - Add timeout, retry, and rate-limit handling.
 - Add fallback chain:
   1. selected custom provider
-  2. Closira native provider
+  2. Clorisa native provider
   3. deterministic safe fallback
 - Add audit logging for AI tasks.
 - Add consent records for image and virtual try-on tasks.
 
 ## Required Provider Adapters
 
-### Native Closira AI
+### Native Clorisa AI
 
 - Hosted model endpoint or local model runtime.
 - Clothing classifier.

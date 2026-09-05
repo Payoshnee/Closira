@@ -2,9 +2,9 @@
 set -euo pipefail
 
 BACKUP_DIR="${BACKUP_DIR:-backups/postgres}"
-DATABASE_URL="${DATABASE_URL:-postgresql://closira:closira@localhost:5432/closira}"
+DATABASE_URL="${DATABASE_URL:-postgresql://clorisa:clorisa@localhost:5432/clorisa}"
 TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
-OUTPUT_FILE="${BACKUP_DIR}/closira-${TIMESTAMP}.dump"
+OUTPUT_FILE="${BACKUP_DIR}/clorisa-${TIMESTAMP}.dump"
 
 if ! command -v pg_dump >/dev/null 2>&1; then
   echo "ERROR: pg_dump is required." >&2

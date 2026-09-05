@@ -16,7 +16,7 @@ export function MarketingNavbar() {
           <span className="grid h-9 w-9 place-items-center rounded-lg bg-charcoal text-white">
             <Sparkles className="h-4 w-4" aria-hidden="true" />
           </span>
-          Closira
+          Clorisa
         </Link>
         <div className="hidden items-center gap-7 md:flex">
           {publicNavItems.map((item) => (

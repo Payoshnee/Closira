@@ -24,7 +24,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-ivory-50 text-charcoal">
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-stone-200 bg-white/88 px-4 py-5 lg:block">
         <Link href={routes.home} className="text-lg font-bold">
-          Closira
+          Clorisa
         </Link>
         <nav className="mt-8 space-y-1" aria-label="Dashboard navigation">
           {dashboardNav.map((item) => {
@@ -42,7 +42,7 @@ export function DashboardShell({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-30 border-b border-stone-200 bg-ivory-50/88 px-5 py-4 backdrop-blur-xl lg:px-8">
           <div className="flex items-center justify-between gap-4">
             <Link href="/dashboard" className="font-bold lg:hidden">
-              Closira
+              Clorisa
             </Link>
             <div className="hidden text-sm text-stone-600 lg:block">Private wardrobe workspace</div>
             <Link href={routes.home} className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-ivory-100">

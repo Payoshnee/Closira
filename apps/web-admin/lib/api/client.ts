@@ -86,7 +86,7 @@ async function apiError(response: Response) {
 
 async function apiHeaders(json = false): Promise<HeadersInit> {
   const cookieStore = await cookies();
-  const csrfToken = cookieStore.get("closira_csrf")?.value;
+  const csrfToken = cookieStore.get("clorisa_csrf")?.value;
   const cookieHeader = cookieStore
     .getAll()
     .map((cookie) => `${cookie.name}=${cookie.value}`)

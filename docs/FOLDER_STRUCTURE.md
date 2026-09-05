@@ -1,7 +1,7 @@
 # Folder Structure
 
 ```text
-closira/
+clorisa/
   README.md
   docs/
   apps/

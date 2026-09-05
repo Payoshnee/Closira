@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 
 export default function SmartShoppingPage() {
   return (
-    <SimplePage eyebrow="Smart shopping" title="Check before you buy another duplicate." description="Closira helps compare wishlist pieces against your existing wardrobe so new purchases fill real gaps.">
+    <SimplePage eyebrow="Smart shopping" title="Check before you buy another duplicate." description="Clorisa helps compare wishlist pieces against your existing wardrobe so new purchases fill real gaps.">
       <Card className="p-8">
         <SearchCheck className="h-8 w-8 text-rose-700" aria-hidden="true" />
         <h2 className="mt-6 text-3xl font-bold text-charcoal">Buy with wardrobe context.</h2>

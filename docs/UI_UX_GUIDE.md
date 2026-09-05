@@ -2,7 +2,7 @@
 
 ## Design Principles
 
-Closira should feel premium, clean, fashionable, private, and easy to use. The interface is mobile-first, image-forward, and calm enough for daily use.
+Clorisa should feel premium, clean, fashionable, private, and easy to use. The interface is mobile-first, image-forward, and calm enough for daily use.
 
 ## Visual System
 

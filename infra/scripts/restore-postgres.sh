@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DATABASE_URL="${DATABASE_URL:-postgresql://closira:closira@localhost:5432/closira}"
+DATABASE_URL="${DATABASE_URL:-postgresql://clorisa:clorisa@localhost:5432/clorisa}"
 BACKUP_FILE="${1:-}"
 
 if [[ -z "$BACKUP_FILE" ]]; then

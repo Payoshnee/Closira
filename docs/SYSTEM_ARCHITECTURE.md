@@ -2,7 +2,7 @@
 
 ## Overview
 
-Closira is a monorepo with a Flutter mobile app, Next.js admin dashboard, NestJS API, FastAPI AI service, PostgreSQL database, Redis queue/cache layer, private object storage, and deployment infrastructure.
+Clorisa is a monorepo with a Flutter mobile app, Next.js admin dashboard, NestJS API, FastAPI AI service, PostgreSQL database, Redis queue/cache layer, private object storage, and deployment infrastructure.
 
 ## Components
 

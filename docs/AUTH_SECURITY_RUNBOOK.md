@@ -5,13 +5,13 @@
 Required production variables:
 
 ```bash
-MAIL_FROM="Closira <no-reply@closira.com>"
+MAIL_FROM="Clorisa <no-reply@clorisa.com>"
 SMTP_HOST=smtp.provider.example
 SMTP_PORT=587
 SMTP_SECURE=false
 SMTP_USER=...
 SMTP_PASSWORD=...
-WEB_ORIGIN=https://closira.com
+WEB_ORIGIN=https://clorisa.com
 ```
 
 Verify staging SMTP:

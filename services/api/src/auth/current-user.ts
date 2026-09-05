@@ -9,14 +9,14 @@ export type CurrentUser = {
 };
 
 type AuthCookies = {
-  closira_access?: string;
+  clorisa_access?: string;
 };
 
 export function requireCurrentUser(request: Request, auth: AuthService): CurrentUser {
   const authHeader = request.headers.authorization;
   const bearer = authHeader?.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : undefined;
   const cookies = (request.cookies ?? {}) as AuthCookies;
-  const payload = auth.verifyAccessToken(bearer ?? cookies.closira_access);
+  const payload = auth.verifyAccessToken(bearer ?? cookies.clorisa_access);
 
   if (!payload.sub) {
     throw new UnauthorizedException("Authenticated user is required.");

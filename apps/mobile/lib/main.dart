@@ -6,42 +6,42 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 void main() {
-  runApp(const ClosiraMobileApp());
+  runApp(const ClorisaMobileApp());
 }
 
-class ClosiraMobileApp extends StatelessWidget {
-  const ClosiraMobileApp({super.key, this.initialState});
+class ClorisaMobileApp extends StatelessWidget {
+  const ClorisaMobileApp({super.key, this.initialState});
 
-  final ClosiraMobileState? initialState;
+  final ClorisaMobileState? initialState;
 
   @override
   Widget build(BuildContext context) {
     const seed = Color(0xFF5D6B4F);
     return MaterialApp(
-      title: 'Closira',
+      title: 'Clorisa',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: seed),
         scaffoldBackgroundColor: const Color(0xFFFAF8F3),
         useMaterial3: true,
       ),
-      home: ClosiraAppShell(initialState: initialState),
+      home: ClorisaAppShell(initialState: initialState),
     );
   }
 }
 
-class ClosiraAppShell extends StatefulWidget {
-  const ClosiraAppShell({super.key, this.initialState});
+class ClorisaAppShell extends StatefulWidget {
+  const ClorisaAppShell({super.key, this.initialState});
 
-  final ClosiraMobileState? initialState;
+  final ClorisaMobileState? initialState;
 
   @override
-  State<ClosiraAppShell> createState() => _ClosiraAppShellState();
+  State<ClorisaAppShell> createState() => _ClorisaAppShellState();
 }
 
-class _ClosiraAppShellState extends State<ClosiraAppShell> {
-  late final ClosiraMobileState state =
-      widget.initialState ?? ClosiraMobileState();
+class _ClorisaAppShellState extends State<ClorisaAppShell> {
+  late final ClorisaMobileState state =
+      widget.initialState ?? ClorisaMobileState();
   int index = 0;
 
   @override
@@ -124,11 +124,11 @@ class _ClosiraAppShellState extends State<ClosiraAppShell> {
   }
 }
 
-class ClosiraMobileState {
-  ClosiraMobileState({
-    ClosiraApiClient? apiClient,
+class ClorisaMobileState {
+  ClorisaMobileState({
+    ClorisaApiClient? apiClient,
     SecureTokenStore? tokenStore,
-  }) : api = apiClient ?? ClosiraApiClient(),
+  }) : api = apiClient ?? ClorisaApiClient(),
        tokens = tokenStore ?? const SecureTokenStore();
 
   bool isAuthenticated = false;
@@ -136,7 +136,7 @@ class ClosiraMobileState {
   String? errorMessage;
   String userName = 'Himanshu';
   String email = 'himanshu@example.com';
-  final ClosiraApiClient api;
+  final ClorisaApiClient api;
   final SecureTokenStore tokens;
   final imagePicker = ImagePicker();
 
@@ -372,11 +372,11 @@ class ClosiraMobileState {
   ) async {
     final accessToken = await tokens.readAccessToken();
     if (accessToken == null) {
-      throw ClosiraApiException('You need to sign in again.');
+      throw ClorisaApiException('You need to sign in again.');
     }
     try {
       return await action(accessToken);
-    } on ClosiraUnauthorizedException {
+    } on ClorisaUnauthorizedException {
       final refreshed = await api.refresh(await tokens.readRefreshToken());
       await tokens.save(refreshed.tokens);
       applyUser(refreshed.user);
@@ -410,29 +410,29 @@ class SecureTokenStore {
   final FlutterSecureStorage storage;
 
   Future<void> save(AuthTokens tokens) async {
-    await storage.write(key: 'closira_access_token', value: tokens.accessToken);
+    await storage.write(key: 'clorisa_access_token', value: tokens.accessToken);
     await storage.write(
-      key: 'closira_refresh_token',
+      key: 'clorisa_refresh_token',
       value: tokens.refreshToken,
     );
   }
 
   Future<String?> readAccessToken() =>
-      storage.read(key: 'closira_access_token');
+      storage.read(key: 'clorisa_access_token');
 
   Future<String?> readRefreshToken() =>
-      storage.read(key: 'closira_refresh_token');
+      storage.read(key: 'clorisa_refresh_token');
 
   Future<void> clear() async {
-    await storage.delete(key: 'closira_access_token');
-    await storage.delete(key: 'closira_refresh_token');
+    await storage.delete(key: 'clorisa_access_token');
+    await storage.delete(key: 'clorisa_refresh_token');
   }
 }
 
-class ClosiraApiClient {
-  ClosiraApiClient({
+class ClorisaApiClient {
+  ClorisaApiClient({
     this.baseUrl = const String.fromEnvironment(
-      'CLOSIRA_API_URL',
+      'CLORISA_API_URL',
       defaultValue: 'http://localhost:3001/api/v1',
     ),
     http.Client? httpClient,
@@ -470,7 +470,7 @@ class ClosiraApiClient {
 
   Future<AuthSessionPayload> refresh(String? refreshToken) async {
     if (refreshToken == null) {
-      throw ClosiraUnauthorizedException('Missing refresh token.');
+      throw ClorisaUnauthorizedException('Missing refresh token.');
     }
     final response = await _http.post(
       endpoint('/auth/refresh'),
@@ -561,7 +561,7 @@ class ClosiraApiClient {
       body: bytes,
     );
     if (upload.statusCode < 200 || upload.statusCode >= 300) {
-      throw ClosiraApiException(
+      throw ClorisaApiException(
         'Image upload failed with status ${upload.statusCode}.',
       );
     }
@@ -679,14 +679,14 @@ class ClosiraApiClient {
         ? <String, dynamic>{}
         : jsonDecode(response.body);
     if (response.statusCode == 401) {
-      throw ClosiraUnauthorizedException(
+      throw ClorisaUnauthorizedException(
         body is Map<String, dynamic>
             ? body['message']?.toString() ?? 'Unauthorized.'
             : 'Unauthorized.',
       );
     }
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw ClosiraApiException(
+      throw ClorisaApiException(
         body is Map<String, dynamic>
             ? body['message']?.toString() ??
                   'Request failed with status ${response.statusCode}'
@@ -697,14 +697,14 @@ class ClosiraApiClient {
   }
 }
 
-class ClosiraApiException implements Exception {
-  ClosiraApiException(this.message);
+class ClorisaApiException implements Exception {
+  ClorisaApiException(this.message);
 
   final String message;
 }
 
-class ClosiraUnauthorizedException extends ClosiraApiException {
-  ClosiraUnauthorizedException(super.message);
+class ClorisaUnauthorizedException extends ClorisaApiException {
+  ClorisaUnauthorizedException(super.message);
 }
 
 class AuthSessionPayload {
@@ -847,7 +847,7 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   final nameController = TextEditingController(text: 'Himanshu');
   final emailController = TextEditingController(text: 'himanshu@example.com');
-  final passwordController = TextEditingController(text: 'closira-demo');
+  final passwordController = TextEditingController(text: 'clorisa-demo');
   bool isSubmitting = false;
   String? errorMessage;
 
@@ -868,9 +868,9 @@ class _AuthScreenState extends State<AuthScreen> {
       await action();
     } catch (error) {
       setState(
-        () => errorMessage = error is ClosiraApiException
+        () => errorMessage = error is ClorisaApiException
             ? error.message
-            : 'Unable to reach Closira API.',
+            : 'Unable to reach Clorisa API.',
       );
     } finally {
       if (mounted) setState(() => isSubmitting = false);
@@ -886,7 +886,7 @@ class _AuthScreenState extends State<AuthScreen> {
           children: [
             const SizedBox(height: 48),
             const Text(
-              'Closira',
+              'Clorisa',
               style: TextStyle(fontSize: 42, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
@@ -967,7 +967,7 @@ class _AuthScreenState extends State<AuthScreen> {
 class HomeScreen extends StatelessWidget {
   const HomeScreen({required this.state, super.key});
 
-  final ClosiraMobileState state;
+  final ClorisaMobileState state;
 
   @override
   Widget build(BuildContext context) {
@@ -990,7 +990,7 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
         const SectionTitle(title: 'Today'),
-        ClosiraCard(
+        ClorisaCard(
           child: ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.event_available),
@@ -1014,7 +1014,7 @@ class WardrobeScreen extends StatelessWidget {
     super.key,
   });
 
-  final ClosiraMobileState state;
+  final ClorisaMobileState state;
   final VoidCallback onChanged;
 
   @override
@@ -1063,7 +1063,7 @@ class WardrobeScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         for (final item in state.wardrobe)
-          ClosiraCard(
+          ClorisaCard(
             child: ListTile(
               contentPadding: EdgeInsets.zero,
               leading: CircleAvatar(
@@ -1118,7 +1118,7 @@ class OutfitsScreen extends StatelessWidget {
     super.key,
   });
 
-  final ClosiraMobileState state;
+  final ClorisaMobileState state;
   final VoidCallback onChanged;
 
   @override
@@ -1166,7 +1166,7 @@ class OutfitsScreen extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         for (final outfit in state.outfits)
-          ClosiraCard(
+          ClorisaCard(
             child: ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.style),
@@ -1192,7 +1192,7 @@ class OutfitsScreen extends StatelessWidget {
 class AiScreen extends StatelessWidget {
   const AiScreen({required this.state, super.key});
 
-  final ClosiraMobileState state;
+  final ClorisaMobileState state;
 
   @override
   Widget build(BuildContext context) {
@@ -1214,7 +1214,7 @@ class AiScreen extends StatelessWidget {
             },
           ),
         const SectionTitle(title: 'Shopping assistant'),
-        ClosiraCard(
+        ClorisaCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1248,13 +1248,13 @@ class AiScreen extends StatelessWidget {
           ),
         ),
         const SectionTitle(title: 'Provider settings'),
-        const ClosiraCard(
+        const ClorisaCard(
           child: Column(
             children: [
               SwitchListTile(
                 value: true,
                 onChanged: null,
-                title: Text('Closira Native AI'),
+                title: Text('Clorisa Native AI'),
               ),
               ListTile(
                 leading: Icon(Icons.key),
@@ -1272,7 +1272,7 @@ class AiScreen extends StatelessWidget {
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({required this.state, required this.onLogout, super.key});
 
-  final ClosiraMobileState state;
+  final ClorisaMobileState state;
   final Future<void> Function() onLogout;
 
   @override
@@ -1281,7 +1281,7 @@ class ProfileScreen extends StatelessWidget {
       title: 'Profile',
       subtitle: state.email,
       children: [
-        ClosiraCard(
+        ClorisaCard(
           child: Column(
             children: [
               TextField(
@@ -1309,7 +1309,7 @@ class ProfileScreen extends StatelessWidget {
             ],
           ),
         ),
-        const ClosiraCard(
+        const ClorisaCard(
           child: Column(
             children: [
               SwitchListTile(
@@ -1386,8 +1386,8 @@ class ScreenScaffold extends StatelessWidget {
   }
 }
 
-class ClosiraCard extends StatelessWidget {
-  const ClosiraCard({required this.child, super.key});
+class ClorisaCard extends StatelessWidget {
+  const ClorisaCard({required this.child, super.key});
 
   final Widget child;
 
@@ -1430,7 +1430,7 @@ class MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClosiraCard(
+    return ClorisaCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1476,7 +1476,7 @@ class PromptTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClosiraCard(
+    return ClorisaCard(
       child: ListTile(
         contentPadding: EdgeInsets.zero,
         leading: const Icon(Icons.auto_awesome),

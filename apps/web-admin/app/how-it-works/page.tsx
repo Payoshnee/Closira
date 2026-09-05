@@ -4,7 +4,7 @@ import { howItWorksSteps } from "@/lib/mock/marketing";
 
 export default function HowItWorksPage() {
   return (
-    <SimplePage eyebrow="How it works" title="A calm system for getting dressed." description="Closira starts with your real wardrobe, then helps you organize, style, plan, and shop with more intention.">
+    <SimplePage eyebrow="How it works" title="A calm system for getting dressed." description="Clorisa starts with your real wardrobe, then helps you organize, style, plan, and shop with more intention.">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {howItWorksSteps.map((step, index) => (
           <Card key={step.title} className="p-6">

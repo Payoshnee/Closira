@@ -1,8 +1,8 @@
-# Closira
+# Clorisa
 
 > **A privacy-first, AI-assisted digital wardrobe, outfit planner, analytics platform, and smart shopping companion.**
 
-Closira turns a physical wardrobe into a searchable and measurable digital system. Users can catalog clothes and accessories, build outfits from items they own, plan looks, record wear, understand wardrobe utility, and request context-aware styling or purchase advice.
+Clorisa turns a physical wardrobe into a searchable and measurable digital system. Users can catalog clothes and accessories, build outfits from items they own, plan looks, record wear, understand wardrobe utility, and request context-aware styling or purchase advice.
 
 This is a multi-client, service-oriented product—not only an AI or UI demo. It includes a Next.js product experience, Flutter client, NestJS API, FastAPI model service, PostgreSQL/pgvector, Redis, private image storage, billing abstractions, security controls, monitoring, CI, and operational tooling.
 
@@ -30,7 +30,7 @@ This is a multi-client, service-oriented product—not only an AI or UI demo. It
 
 ### One-line pitch
 
-Closira helps people wear more of what they own, create better outfits, and make informed shopping decisions using a private, structured wardrobe and explainable AI assistance.
+Clorisa helps people wear more of what they own, create better outfits, and make informed shopping decisions using a private, structured wardrobe and explainable AI assistance.
 
 ### The problem
 
@@ -38,7 +38,7 @@ People forget items they own, repeat purchases, underuse clothes, struggle to co
 
 ### The solution
 
-Closira connects three questions normally spread across separate tools:
+Clorisa connects three questions normally spread across separate tools:
 
 1. **What do I own?** A visual inventory with metadata, search, filters, and private images.
 2. **What should I wear?** Outfit building, calendar planning, usage history, and wardrobe-aware recommendations.
@@ -113,7 +113,7 @@ Closira connects three questions normally spread across separate tools:
 
 ## Differentiation and novelty
 
-Closira does not claim that wardrobe apps are globally unique. Its novelty lies in one coherent feedback loop:
+Clorisa does not claim that wardrobe apps are globally unique. Its novelty lies in one coherent feedback loop:
 
 ```text
 Catalog owned items → create outfits → schedule and wear them
@@ -151,7 +151,7 @@ flowchart LR
     API --> OBS[Logs / Metrics / Error Tracking]
 ```
 
-Closira is a **modular monorepo with independently deployable services**. Transactional domains stay in one NestJS API where ownership rules and relational consistency matter. AI is separated because Python/model dependencies, scaling, latency, and failure modes differ. PostgreSQL is authoritative; Redis, model output, and object storage never replace ownership or business state.
+Clorisa is a **modular monorepo with independently deployable services**. Transactional domains stay in one NestJS API where ownership rules and relational consistency matter. AI is separated because Python/model dependencies, scaling, latency, and failure modes differ. PostgreSQL is authoritative; Redis, model output, and object storage never replace ownership or business state.
 
 | Component | Responsibility |
 | --- | --- |
@@ -265,7 +265,7 @@ The image worker is currently batch/command oriented. High-volume deployment sho
 ## Repository structure
 
 ```text
-Closira/
+Clorisa/
 ├── apps/mobile/               # Flutter Android/iOS client
 ├── apps/web-admin/            # Next.js public site and dashboard
 ├── services/api/              # NestJS API, Prisma, workers
@@ -329,7 +329,7 @@ Node.js 22+, Python 3.12+, Docker Compose, and optionally Flutter/Ollama.
 
 ```bash
 git clone <repository-url>
-cd Closira
+cd Clorisa
 ./setup.sh
 ```
 
@@ -371,7 +371,7 @@ Production should use separately scalable web/API/AI containers, managed Postgre
 
 ## Portfolio and placement showcase
 
-Closira demonstrates product thinking and engineering across frontend, mobile, API design, relational modeling, AI integration, privacy, subscriptions, observability, and DevOps.
+Clorisa demonstrates product thinking and engineering across frontend, mobile, API design, relational modeling, AI integration, privacy, subscriptions, observability, and DevOps.
 
 Strong interview discussion points:
 
@@ -386,7 +386,7 @@ Strong interview discussion points:
 
 **Resume-ready summary:**
 
-> Designed and built Closira, a full-stack AI-assisted wardrobe platform using Next.js, Flutter, NestJS, FastAPI, PostgreSQL/pgvector, Redis, Prisma, and S3-compatible storage. Implemented secure sessions, user-scoped wardrobe/outfit workflows, signed image uploads and processing, vector-ready similarity, provider-agnostic AI and billing, entitlement enforcement, observability, CI, and operational runbooks.
+> Designed and built Clorisa, a full-stack AI-assisted wardrobe platform using Next.js, Flutter, NestJS, FastAPI, PostgreSQL/pgvector, Redis, Prisma, and S3-compatible storage. Implemented secure sessions, user-scoped wardrobe/outfit workflows, signed image uploads and processing, vector-ready similarity, provider-agnostic AI and billing, entitlement enforcement, observability, CI, and operational runbooks.
 
 Suggested demo: register/login; upload an item; explain signed storage; search and mark worn; create/plan an outfit; inspect analytics; run an AI/shopping request and show confidence/fallback; then present the schema, monitoring, CI, and honest status table.
 
@@ -422,4 +422,4 @@ Near-term priorities are broader DTO/E2E coverage, staging verification, durable
 
 No open-source license is currently declared. Unless the owner adds one, treat this source as **all rights reserved**.
 
-<p align="center"><strong>Closira — know your wardrobe, style what you own, and shop with context.</strong></p>
+<p align="center"><strong>Clorisa — know your wardrobe, style what you own, and shop with context.</strong></p>

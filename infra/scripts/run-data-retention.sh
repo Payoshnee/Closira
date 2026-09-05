@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DATABASE_URL="${DATABASE_URL:-postgresql://closira:closira@localhost:5432/closira}"
+DATABASE_URL="${DATABASE_URL:-postgresql://clorisa:clorisa@localhost:5432/clorisa}"
 AUDIT_LOG_RETENTION_DAYS="${AUDIT_LOG_RETENTION_DAYS:-365}"
 AI_JOB_RETENTION_DAYS="${AI_JOB_RETENTION_DAYS:-180}"
 

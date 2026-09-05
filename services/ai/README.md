@@ -1,6 +1,6 @@
-# Closira AI Training
+# Clorisa AI Training
 
-This service now supports a lightweight baseline training path. It is not a production fashion model yet; it is a trainable scaffold that lets Closira move from deterministic placeholders toward measured model behavior.
+This service now supports a lightweight baseline training path. It is not a production fashion model yet; it is a trainable scaffold that lets Clorisa move from deterministic placeholders toward measured model behavior.
 
 ## Dataset Format
 
@@ -48,7 +48,7 @@ python3 services/ai/scripts/build_image_embeddings.py \
 ```bash
 PYTHONPATH=services/ai python3 services/ai/scripts/train_baseline.py \
   --dataset services/ai/data/sample_manifest.jsonl \
-  --output services/ai/models/closira-baseline.json
+  --output services/ai/models/clorisa-baseline.json
 ```
 
 ## Evaluate
@@ -56,15 +56,15 @@ PYTHONPATH=services/ai python3 services/ai/scripts/train_baseline.py \
 ```bash
 PYTHONPATH=services/ai python3 services/ai/scripts/evaluate_baseline.py \
   --dataset services/ai/data/sample_manifest.jsonl \
-  --model services/ai/models/closira-baseline.json
+  --model services/ai/models/clorisa-baseline.json
 ```
 
 ## Runtime
 
-Set `CLOSIRA_MODEL_PATH` to load a trained artifact:
+Set `CLORISA_MODEL_PATH` to load a trained artifact:
 
 ```bash
-CLOSIRA_MODEL_PATH=services/ai/models/closira-baseline.json \
+CLORISA_MODEL_PATH=services/ai/models/clorisa-baseline.json \
 PYTHONPATH=services/ai python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 

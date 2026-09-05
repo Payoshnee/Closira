@@ -8,9 +8,9 @@ from app.model_registry import BaselineModel
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Evaluate Closira's lightweight baseline wardrobe classifier.")
+    parser = argparse.ArgumentParser(description="Evaluate Clorisa's lightweight baseline wardrobe classifier.")
     parser.add_argument("--dataset", required=True, help="Path to JSONL evaluation manifest.")
-    parser.add_argument("--model", default="services/ai/models/closira-baseline.json", help="Model artifact path.")
+    parser.add_argument("--model", default="services/ai/models/clorisa-baseline.json", help="Model artifact path.")
     args = parser.parse_args()
 
     model = BaselineModel(json.loads(Path(args.model).read_text(encoding="utf-8")))

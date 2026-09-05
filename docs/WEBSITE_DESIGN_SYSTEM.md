@@ -2,7 +2,7 @@
 
 ## Brand Feel
 
-Closira should feel premium, clean, elegant, fashion-tech, private, and calm. The website uses warm ivory surfaces, charcoal text, champagne and rose accents, muted lavender support tones, and image-inspired editorial composition built in CSS until real visual assets exist.
+Clorisa should feel premium, clean, elegant, fashion-tech, private, and calm. The website uses warm ivory surfaces, charcoal text, champagne and rose accents, muted lavender support tones, and image-inspired editorial composition built in CSS until real visual assets exist.
 
 ## Tokens
 

@@ -8,8 +8,8 @@ import { PrismaService } from "../prisma.service";
 import { csrfCookieName } from "../security/csrf.middleware";
 import { LoginLockoutService } from "./login-lockout.service";
 
-const ACCESS_COOKIE = "closira_access";
-const REFRESH_COOKIE = "closira_refresh";
+const ACCESS_COOKIE = "clorisa_access";
+const REFRESH_COOKIE = "clorisa_refresh";
 const ACCESS_TTL_SECONDS = 15 * 60;
 const REFRESH_TTL_SECONDS = 30 * 24 * 60 * 60;
 
@@ -138,7 +138,7 @@ export class AuthService {
       }
     }
 
-    const deletedEmail = `deleted-${user.id}@deleted.closira.local`;
+    const deletedEmail = `deleted-${user.id}@deleted.clorisa.local`;
     await this.prisma.$transaction([
       this.prisma.session.updateMany({ where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() } }),
       this.prisma.aiProviderSetting.updateMany({ where: { userId: user.id }, data: { isEnabled: false, encryptedSecret: null } }),

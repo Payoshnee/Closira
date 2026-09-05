@@ -8,7 +8,7 @@ export default function SignupPage() {
       <main className="px-5 py-16">
         <AuthForm
           title="Start organizing your wardrobe"
-          description="Create your Closira account and start building a wardrobe that syncs to the API."
+          description="Create your Clorisa account and start building a wardrobe that syncs to the API."
           cta="Create account"
           intent="signup"
           includeName

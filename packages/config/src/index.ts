@@ -1,2 +1,2 @@
-export const projectName = "Closira";
+export const projectName = "Clorisa";
 

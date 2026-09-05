@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from typing import Any, Optional
 
-MODEL_PATH = Path(os.getenv("CLOSIRA_MODEL_PATH", "services/ai/models/closira-baseline.json"))
+MODEL_PATH = Path(os.getenv("CLORISA_MODEL_PATH", "services/ai/models/clorisa-baseline.json"))
 
 
 class BaselineModel:

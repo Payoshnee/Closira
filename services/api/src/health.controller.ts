@@ -20,7 +20,7 @@ export class HealthController {
   getLive() {
     return {
       status: "ok",
-      service: "closira-api",
+      service: "clorisa-api",
       uptimeSeconds: Math.round(process.uptime()),
       timestamp: new Date().toISOString()
     };
@@ -37,7 +37,7 @@ export class HealthController {
     const ready = Object.values(checks).every((check) => check.status === "ok" || check.status === "skipped");
     const response = {
       status: ready ? "ok" : "error",
-      service: "closira-api",
+      service: "clorisa-api",
       checks,
       timestamp: new Date().toISOString()
     };

@@ -44,10 +44,10 @@ describe("verifyGatewaySignature", () => {
     const secret = "test_secret";
     const signature = createHmac("sha256", secret).update(JSON.stringify(body)).digest("hex");
 
-    expect(() => verifyGatewaySignature(body, { "x-closira-signature": signature }, secret)).not.toThrow();
+    expect(() => verifyGatewaySignature(body, { "x-clorisa-signature": signature }, secret)).not.toThrow();
   });
 
   it("rejects invalid webhook signatures", () => {
-    expect(() => verifyGatewaySignature({ id: "evt_1" }, { "x-closira-signature": "bad" }, "test_secret")).toThrow(ForbiddenException);
+    expect(() => verifyGatewaySignature({ id: "evt_1" }, { "x-clorisa-signature": "bad" }, "test_secret")).toThrow(ForbiddenException);
   });
 });

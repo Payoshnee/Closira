@@ -5,7 +5,7 @@ describe("HealthController", () => {
     const result = new HealthController().getHealth();
 
     expect(result.status).toBe("ok");
-    expect(result.service).toBe("closira-api");
+    expect(result.service).toBe("clorisa-api");
     expect(result.uptimeSeconds).toEqual(expect.any(Number));
     expect(result.timestamp).toEqual(expect.any(String));
   });
@@ -14,6 +14,6 @@ describe("HealthController", () => {
     const result = new HealthController().getLive();
 
     expect(result.status).toBe("ok");
-    expect(result.service).toBe("closira-api");
+    expect(result.service).toBe("clorisa-api");
   });
 });

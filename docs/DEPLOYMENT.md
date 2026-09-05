@@ -1,6 +1,6 @@
-# Closira Free Deployment Guide
+# Clorisa Free Deployment Guide
 
-This guide is for a placement/demo deployment using free tiers only. The goal is to show Closira as a working product without paying for cloud services.
+This guide is for a placement/demo deployment using free tiers only. The goal is to show Clorisa as a working product without paying for cloud services.
 
 ## What We Need To Deploy
 
@@ -116,7 +116,7 @@ WEB_ORIGIN=https://YOUR_VERCEL_APP.vercel.app
 CORS_ORIGINS=https://YOUR_VERCEL_APP.vercel.app
 AI_SERVICE_URL=http://127.0.0.1:8000
 STORAGE_PROVIDER=LOCAL
-MAIL_FROM=Closira <no-reply@closira.local>
+MAIL_FROM=Clorisa <no-reply@clorisa.local>
 DEFAULT_BILLING_GATEWAY=manual
 ```
 
@@ -209,7 +209,7 @@ Install Ollama, pull a local model, then run:
 ollama pull llama3:8b
 ollama pull nomic-embed-text:latest
 
-CLOSIRA_FORCE_AI_PROVIDER=OLLAMA \
+CLORISA_FORCE_AI_PROVIDER=OLLAMA \
 OLLAMA_BASE_URL=http://localhost:11434 \
 OLLAMA_MODEL=llama3:8b \
 OLLAMA_EMBEDDING_MODEL=nomic-embed-text:latest \

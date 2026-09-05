@@ -1,5 +1,5 @@
 {
-  "model_name": "closira-baseline",
+  "model_name": "clorisa-baseline",
   "model_type": "text-centroid-baseline",
   "trained_at": "2026-08-25T16:31:12.476652+00:00",
   "row_count": 5,

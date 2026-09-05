@@ -1,4 +1,4 @@
-# Closira Feature Status Matrix
+# Clorisa Feature Status Matrix
 
 Last updated: 2026-08-30
 
@@ -18,7 +18,7 @@ Status key:
 | Public Website | Privacy page | Partial | Privacy route exists. | Legal copy is not lawyer-reviewed. | Final legal review. |
 | Public Website | Terms page | Partial | Terms route exists. | Legal copy is not lawyer-reviewed. | Final legal review. |
 | Public Website | Contact page | Partial | Contact page UI exists. | No real contact/lead backend confirmed. | Contact submission endpoint, email/CRM integration, spam protection. |
-| Design System | Tailwind theme | Real | Tailwind configured with Closira visual direction. | Needs formal brand tokens/assets package. | Brand lockup, image style guide, asset library. |
+| Design System | Tailwind theme | Real | Tailwind configured with Clorisa visual direction. | Needs formal brand tokens/assets package. | Brand lockup, image style guide, asset library. |
 | Design System | UI primitives | Real | Button, card, badge, input, textarea, skeleton, empty/error states, toast-style primitives. | Not a published component package. | Accessibility audit and Storybook-style documentation if needed. |
 | Auth | Signup/register | Real | Backend register endpoint, frontend form integration, SMTP-capable email sending, and SMTP verification script exist. | Real provider credentials are environment-owned. | Configure provider in staging/prod and monitor deliverability. |
 | Auth | Login | Real | Backend login, session creation, secure cookies, frontend integration, CSRF token issuance, and Redis-backed failed-login lockout with memory fallback exist. | Needs staging Redis verification and e2e tests. | Run Redis-backed lockout tests in staging. |
@@ -86,13 +86,13 @@ Status key:
 | Profile | Avatar upload | Not Built | Profile has image fields conceptually. | No avatar upload flow. | Upload, crop, delete. |
 | Profile | Notification settings | Partial | Settings shape exists. | No notification delivery service. | Email/push preferences and scheduler. |
 | Profile | Account deletion | Partial | Authenticated account deletion endpoint soft-deletes user, anonymizes email/name, revokes sessions, disables AI provider secrets, deletes embedding/image rows, marks wardrobe items deleted, clears cookies, and audits. | External object storage object deletion and provider/customer deletion need worker execution. | Deletion worker for storage objects and billing/customer cleanup. |
-| Mobile | Flutter project | Real | `apps/mobile` now contains a Closira Material app with Android/iOS shell. | Still early mobile implementation. | App IDs, signing, icons, splash, release builds. |
+| Mobile | Flutter project | Real | `apps/mobile` now contains a Clorisa Material app with Android/iOS shell. | Still early mobile implementation. | App IDs, signing, icons, splash, release builds. |
 | Mobile | Auth | Partial | Login/register call API; access/refresh tokens persist in secure storage; session restore calls `/auth/me`; 401 retry refreshes tokens; logout clears tokens. | Offline demo path remains for previews/tests. | Device e2e against staging and account verification/reset flows. |
 | Mobile | Wardrobe | Partial | Wardrobe list/sync, create, favorite, mark-worn, signed image upload, upload PUT, and finalize call exist. | Edit/delete/detail UX still thin. | Image preview/progress polish, edit/delete/detail screens, device upload tests. |
 | Mobile | Outfits/calendar | Partial | Outfit list sync, create, duplicate, and calendar segment exist with API calls. | Calendar planning mutations still need richer mobile UI. | Calendar create/worn flows and month/week/day calendar. |
 | Mobile | AI/shopping | Partial | AI stylist prompts and shopping check call real API and show results. | Provider settings surface is display-only. | Provider connect/edit/test UI and richer result cards. |
 | Mobile | Profile/settings | Partial | Profile form, API update call, notification toggles, AI data consent toggle, and logout action exist. | Form controllers are minimal and settings toggles are disabled. | Real editable settings/privacy flows. |
-| Mobile | Tests | Partial | Flutter widget tests verify Closira auth shell and wardrobe state; integration test smoke flow exists. | Integration test has not been run on a real simulator/device in this session. | Run device e2e, upload e2e, golden, and accessibility tests. |
+| Mobile | Tests | Partial | Flutter widget tests verify Clorisa auth shell and wardrobe state; integration test smoke flow exists. | Integration test has not been run on a real simulator/device in this session. | Run device e2e, upload e2e, golden, and accessibility tests. |
 | Observability | Request logs | Real | Structured request logs with request IDs exist. | Needs centralized log backend. | Ship logs to production provider. |
 | Observability | Metrics export | Real | `/api/v1/metrics` Prometheus-style endpoint exists. | In-memory metrics reset on restart and are per-instance. | Prometheus/Grafana or hosted metrics backend. |
 | Observability | Error tracking | Partial | Webhook-based error tracking hook exists. | No Sentry/OpenTelemetry SDK selected. | Choose provider and add release/environment tagging. |
@@ -102,7 +102,7 @@ Status key:
 | Testing | API tests | Partial | Health and metrics tests exist. | Most modules untested. | Auth/wardrobe/outfit/calendar/AI/billing/admin tests. |
 | Testing | Web tests | Partial | Lint/typecheck/build pass. | No Playwright/user-flow tests. | E2E coverage. |
 | Testing | AI tests | Partial | Health tests exist. | No model quality/schema/ranking tests. | AI contract and evaluation tests. |
-| Testing | Mobile tests | Partial | Flutter widget tests verify Closira auth shell and wardrobe add flow. | No API/integration tests yet. | Mobile API, upload, golden, and accessibility tests. |
+| Testing | Mobile tests | Partial | Flutter widget tests verify Clorisa auth shell and wardrobe add flow. | No API/integration tests yet. | Mobile API, upload, golden, and accessibility tests. |
 | Accessibility | Audit | Not Built | N/A | No automated/manual accessibility audit. | Add axe/Playwright checks and manual keyboard/screen reader pass. |
 | Legal | Privacy/terms | Partial | Pages exist. | Not final legal copy. | Counsel-reviewed privacy policy, terms, cookie policy if needed. |
 | Brand | Brand assets | Partial | Visual direction exists in UI. | No final logo package/product screenshots/OG images. | Logo, icons, screenshots, social images, app store assets. |

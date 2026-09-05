@@ -1,6 +1,6 @@
-# Closira AI Dataset and Embeddings Plan
+# Clorisa AI Dataset and Embeddings Plan
 
-Closira must train and evaluate on legally usable fashion data. Do not scrape random product pages or social images for training. Every image row must carry license, source, author, consent, and label metadata before it enters the model pipeline.
+Clorisa must train and evaluate on legally usable fashion data. Do not scrape random product pages or social images for training. Every image row must carry license, source, author, consent, and label metadata before it enters the model pipeline.
 
 ## Production Dataset Sources
 
@@ -69,7 +69,7 @@ python3 services/ai/scripts/build_image_embeddings.py \
   --provider hash
 ```
 
-Runtime `/embed-image` now returns 768 dimensions. Set `CLOSIRA_IMAGE_EMBEDDING_PROVIDER=open_clip` when the AI container includes `requirements-embeddings.txt`; otherwise the service returns a deterministic 768-dimensional dev fallback.
+Runtime `/embed-image` now returns 768 dimensions. Set `CLORISA_IMAGE_EMBEDDING_PROVIDER=open_clip` when the AI container includes `requirements-embeddings.txt`; otherwise the service returns a deterministic 768-dimensional dev fallback.
 
 ## Evaluation Before Launch
 

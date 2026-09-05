@@ -1,4 +1,4 @@
-package com.closira.closira_mobile
+package com.clorisa.clorisa_mobile
 
 import io.flutter.embedding.android.FlutterActivity
 

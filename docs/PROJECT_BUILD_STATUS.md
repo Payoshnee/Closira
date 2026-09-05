@@ -1,10 +1,10 @@
-# Closira Project Build Status
+# Clorisa Project Build Status
 
 Last updated: 2026-08-25
 
 ## Executive Summary
 
-Closira now has a complete Next.js web frontend foundation for the public website and dashboard modules through Run 7. The implemented web experience includes the marketing website, auth entry screens, dashboard shell, wardrobe, categories, tags, outfits, calendar, AI stylist, shopping assistant, analytics, profile, billing, and admin dashboard screens.
+Clorisa now has a complete Next.js web frontend foundation for the public website and dashboard modules through Run 7. The implemented web experience includes the marketing website, auth entry screens, dashboard shell, wardrobe, categories, tags, outfits, calendar, AI stylist, shopping assistant, analytics, profile, billing, and admin dashboard screens.
 
 The current web implementation is production-build clean. AI, shopping assistant, and analytics now call real NestJS HTTP endpoints instead of local frontend mock adapters. Many non-AI product areas still use typed mock adapters because the full database, persistence, and business APIs are not implemented yet.
 
@@ -558,7 +558,7 @@ Left:
 
 ### Left
 
-- Hosted model integration for native Closira AI.
+- Hosted model integration for native Clorisa AI.
 - Provider connectors for OpenAI, Anthropic, Gemini, Azure OpenAI, Ollama, and custom OpenAI-compatible endpoints.
 - Real clothing image analysis.
 - Auto-tagging connected to wardrobe save flows.
@@ -578,8 +578,8 @@ Completed:
 - Added `services/ai/scripts/train_baseline.py`.
 - Added `services/ai/scripts/evaluate_baseline.py`.
 - Added sample dataset at `services/ai/data/sample_manifest.jsonl`.
-- Trained a local baseline artifact at `services/ai/models/closira-baseline.json`.
-- Wired the AI service to load `CLOSIRA_MODEL_PATH` when present.
+- Trained a local baseline artifact at `services/ai/models/clorisa-baseline.json`.
+- Wired the AI service to load `CLORISA_MODEL_PATH` when present.
 
 Important limitation:
 

@@ -27,7 +27,7 @@ echo "==> Checking signed webhook rejection/acceptance contract"
 BODY='{"id":"evt_verify","type":"billing.verify","subscriptionId":"sub_verify","plan":"PRO","status":"active"}'
 BAD_STATUS="$(curl --silent --output /dev/null --write-out "%{http_code}" \
   -H "Content-Type: application/json" \
-  -H "x-closira-signature: invalid" \
+  -H "x-clorisa-signature: invalid" \
   -d "${BODY}" \
   "${API_BASE_URL}/billing/webhooks/${GATEWAY}")"
 
@@ -39,7 +39,7 @@ fi
 SIGNATURE="$(printf '%s' "${BODY}" | openssl dgst -sha256 -hmac "${!WEBHOOK_ENV_NAME}" -hex | awk '{print $2}')"
 curl --fail --silent --show-error \
   -H "Content-Type: application/json" \
-  -H "x-closira-signature: ${SIGNATURE}" \
+  -H "x-clorisa-signature: ${SIGNATURE}" \
   -d "${BODY}" \
   "${API_BASE_URL}/billing/webhooks/${GATEWAY}" >/dev/null
 

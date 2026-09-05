@@ -67,7 +67,7 @@ export class BillingController {
       include: { subscription: { include: { user: true } } }
     });
     const text = [
-      "Closira Invoice",
+      "Clorisa Invoice",
       `Invoice: ${invoice.id}`,
       `Customer: ${invoice.subscription.user.email}`,
       `Gateway: ${invoice.providerKey}`,
@@ -77,7 +77,7 @@ export class BillingController {
       invoice.paidAt ? `Paid: ${invoice.paidAt.toISOString()}` : "Paid: pending"
     ].join("\n");
     response.setHeader("Content-Type", "text/plain; charset=utf-8");
-    response.setHeader("Content-Disposition", `attachment; filename="closira-invoice-${invoice.id}.txt"`);
+    response.setHeader("Content-Disposition", `attachment; filename="clorisa-invoice-${invoice.id}.txt"`);
     response.send(text);
   }
 

@@ -12,7 +12,7 @@ EMBEDDING_DIMENSION = 768
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build Closira image embeddings from a licensed image manifest.")
+    parser = argparse.ArgumentParser(description="Build Clorisa image embeddings from a licensed image manifest.")
     parser.add_argument("--manifest", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--provider", choices=["open_clip", "hash"], default="open_clip")

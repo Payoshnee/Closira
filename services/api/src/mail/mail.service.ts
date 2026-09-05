@@ -16,9 +16,9 @@ export class MailService {
     const link = `${webUrl()}/verify-email?token=${encodeURIComponent(token)}`;
     await this.send({
       to,
-      subject: "Verify your Closira email",
-      text: `Verify your Closira email: ${link}`,
-      html: `<p>Verify your Closira email:</p><p><a href="${link}">${link}</a></p>`
+      subject: "Verify your Clorisa email",
+      text: `Verify your Clorisa email: ${link}`,
+      html: `<p>Verify your Clorisa email:</p><p><a href="${link}">${link}</a></p>`
     });
     return link;
   }
@@ -27,9 +27,9 @@ export class MailService {
     const link = `${webUrl()}/reset-password?token=${encodeURIComponent(token)}`;
     await this.send({
       to,
-      subject: "Reset your Closira password",
-      text: `Reset your Closira password: ${link}`,
-      html: `<p>Reset your Closira password:</p><p><a href="${link}">${link}</a></p>`
+      subject: "Reset your Clorisa password",
+      text: `Reset your Clorisa password: ${link}`,
+      html: `<p>Reset your Clorisa password:</p><p><a href="${link}">${link}</a></p>`
     });
     return link;
   }
@@ -53,7 +53,7 @@ export class MailService {
     });
 
     await transporter.sendMail({
-      from: process.env.MAIL_FROM ?? "Closira <no-reply@closira.local>",
+      from: process.env.MAIL_FROM ?? "Clorisa <no-reply@clorisa.local>",
       ...message
     });
   }

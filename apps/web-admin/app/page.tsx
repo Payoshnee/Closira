@@ -21,7 +21,7 @@ export default function Home() {
                 Your wardrobe, styled smarter with AI.
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-700">
-                Closira helps you organize your clothes, create outfits, avoid duplicate shopping, and get AI-powered styling suggestions from your own wardrobe.
+                Clorisa helps you organize your clothes, create outfits, avoid duplicate shopping, and get AI-powered styling suggestions from your own wardrobe.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <ButtonLink href={routes.signup}>
@@ -46,7 +46,7 @@ export default function Home() {
             />
             <SectionHeader
               eyebrow="The solution"
-              title="Closira becomes your personal AI wardrobe assistant."
+              title="Clorisa becomes your personal AI wardrobe assistant."
               description="It turns your closet into a searchable, plan-ready system for outfits, events, analytics, and thoughtful shopping."
             />
           </Container>
@@ -57,7 +57,7 @@ export default function Home() {
             <SectionHeader
               eyebrow="Features"
               title="Built for the way people actually get dressed."
-              description="Closira keeps the wardrobe practical first, then layers in AI where it can make decisions easier."
+              description="Clorisa keeps the wardrobe practical first, then layers in AI where it can make decisions easier."
             />
             <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {featureHighlights.map((feature) => (
@@ -92,7 +92,7 @@ export default function Home() {
             <SectionHeader
               eyebrow="Benefits"
               title="Spend less energy on the closet and more on the life around it."
-              description="Closira is designed to make daily dressing calmer, event planning easier, and shopping more intentional."
+              description="Clorisa is designed to make daily dressing calmer, event planning easier, and shopping more intentional."
             />
             <div className="grid gap-3 sm:grid-cols-2">
               {benefits.map((benefit) => (
@@ -109,7 +109,7 @@ export default function Home() {
           <Container>
             <div className="rounded-lg bg-gradient-to-br from-rose-100 via-ivory-100 to-lavender/40 p-8 sm:p-10">
               <h2 className="max-w-2xl text-3xl font-bold text-charcoal sm:text-4xl">Start with the clothes you already own.</h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-stone-700">Closira is built around your wardrobe first, so AI suggestions stay personal, useful, and grounded.</p>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-stone-700">Clorisa is built around your wardrobe first, so AI suggestions stay personal, useful, and grounded.</p>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                 <ButtonLink href={routes.signup}>Start organizing your wardrobe</ButtonLink>
                 <ButtonLink href={routes.features} variant="secondary">Explore features</ButtonLink>

@@ -15,7 +15,7 @@ export function MarketingFooter() {
     <footer className="border-t border-stone-200 bg-white/64">
       <Container className="flex flex-col gap-5 py-8 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="font-bold text-charcoal">Closira</p>
+          <p className="font-bold text-charcoal">Clorisa</p>
           <p className="mt-1 text-sm text-stone-600">A private wardrobe assistant for better outfit decisions.</p>
         </div>
         <div className="flex flex-wrap gap-x-5 gap-y-2">

@@ -10,9 +10,9 @@ from app.model_registry import vectorize_text
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Train Closira's lightweight baseline wardrobe classifier.")
+    parser = argparse.ArgumentParser(description="Train Clorisa's lightweight baseline wardrobe classifier.")
     parser.add_argument("--dataset", required=True, help="Path to JSONL dataset manifest.")
-    parser.add_argument("--output", default="services/ai/models/closira-baseline.json", help="Output model artifact path.")
+    parser.add_argument("--output", default="services/ai/models/clorisa-baseline.json", help="Output model artifact path.")
     args = parser.parse_args()
 
     rows = read_jsonl(Path(args.dataset))
@@ -36,7 +36,7 @@ def main() -> None:
                 grouped[target][label].append(features)
 
     artifact = {
-        "model_name": "closira-baseline",
+        "model_name": "clorisa-baseline",
         "model_type": "text-centroid-baseline",
         "trained_at": datetime.now(timezone.utc).isoformat(),
         "row_count": len(rows),

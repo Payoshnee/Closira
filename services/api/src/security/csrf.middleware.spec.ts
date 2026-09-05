@@ -18,7 +18,7 @@ describe("CsrfMiddleware", () => {
     const request = makeRequest({
       method: "POST",
       path: "/api/v1/wardrobe/items",
-      cookies: { closira_access: "access", closira_csrf: "cookie-token" },
+      cookies: { clorisa_access: "access", clorisa_csrf: "cookie-token" },
       headers: { "x-csrf-token": "wrong-token" }
     });
 
@@ -31,7 +31,7 @@ describe("CsrfMiddleware", () => {
     const request = makeRequest({
       method: "POST",
       path: "/api/v1/wardrobe/items",
-      cookies: { closira_access: "access", closira_csrf: "cookie-token" },
+      cookies: { clorisa_access: "access", clorisa_csrf: "cookie-token" },
       headers: { "x-csrf-token": "cookie-token" }
     });
 

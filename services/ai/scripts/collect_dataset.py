@@ -22,7 +22,7 @@ ALLOWED_LICENSES = {
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Collect licensed Closira training image manifests.")
+    parser = argparse.ArgumentParser(description="Collect licensed Clorisa training image manifests.")
     parser.add_argument("--input", required=True, help="CSV or JSONL with image_url,path,license_family,labels fields.")
     parser.add_argument("--output", required=True, help="Output normalized JSONL manifest.")
     parser.add_argument("--image-dir", default="services/ai/data/images", help="Directory for downloaded images.")

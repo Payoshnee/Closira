@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from app.image_embeddings import EMBEDDING_DIMENSION, ImageEmbedder
 from app.model_registry import load_model
 
-app = FastAPI(title="Closira AI Service", version="0.1.0")
+app = FastAPI(title="Clorisa AI Service", version="0.1.0")
 baseline_model = load_model()
 image_embedder = ImageEmbedder()
 
@@ -34,7 +34,7 @@ class ShoppingCheckRequest(BaseModel):
 def health() -> dict[str, str]:
     return {
         "status": "ok",
-        "service": "closira-ai",
+        "service": "clorisa-ai",
         "model_loaded": str(bool(baseline_model)),
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
@@ -55,7 +55,7 @@ def analyze_clothing(payload: ClothingAnalysisRequest) -> dict:
             "suggested_tags": [occasion, style],
             "confidence": round((category_confidence + color_confidence + occasion_confidence + style_confidence) / 4, 4),
             "fallback_used": False,
-            "model": baseline_model.artifact.get("model_name", "closira-baseline"),
+            "model": baseline_model.artifact.get("model_name", "clorisa-baseline"),
         }
 
     category = "Footwear" if "heel" in name or "shoe" in name else "Formal Wear" if "blazer" in name else "Wardrobe"
@@ -66,7 +66,7 @@ def analyze_clothing(payload: ClothingAnalysisRequest) -> dict:
         "suggested_tags": ["office"] if category == "Formal Wear" else ["occasion"],
         "confidence": 0.72,
         "fallback_used": True,
-        "model": "closira-native-deterministic-v0",
+        "model": "clorisa-native-deterministic-v0",
     }
 
 
@@ -92,7 +92,7 @@ def recommend_outfit(payload: RecommendationRequest) -> dict:
         "confidence": confidence,
         "explanation": "Native recommendation using supplied wardrobe metadata and the trained baseline when available.",
         "fallback_used": not bool(baseline_model),
-        "model": baseline_model.artifact.get("model_name", "closira-native-stylist-v0") if baseline_model else "closira-native-stylist-v0",
+        "model": baseline_model.artifact.get("model_name", "clorisa-native-stylist-v0") if baseline_model else "clorisa-native-stylist-v0",
     }
 
 
@@ -106,7 +106,7 @@ def shopping_check(payload: ShoppingCheckRequest) -> dict:
         "similar_items": similar[:3],
         "explanation": "Deterministic native shopping check using supplied wardrobe metadata.",
         "fallback_used": True,
-        "model": "closira-native-shopping-v0",
+        "model": "clorisa-native-shopping-v0",
     }
 
 

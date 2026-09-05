@@ -23,7 +23,7 @@ export function AiSettingsPanel({ settings }: { settings: AiProviderSettings | n
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-rose-700">Active provider</p>
             <h2 className="mt-2 text-2xl font-bold text-charcoal">{settings.supportedProviders.find((provider) => provider.id === settings.activeProvider)?.name}</h2>
-            <p className="mt-2 text-sm leading-6 text-stone-600">Closira can use native AI or route the same styling, shopping, analysis, and future try-on tasks through a connected provider.</p>
+            <p className="mt-2 text-sm leading-6 text-stone-600">Clorisa can use native AI or route the same styling, shopping, analysis, and future try-on tasks through a connected provider.</p>
           </div>
           <Badge>{settings.activeProvider}</Badge>
         </div>
@@ -45,7 +45,7 @@ export function AiSettingsPanel({ settings }: { settings: AiProviderSettings | n
                 <input type="hidden" name="provider" value={provider.id} />
                 <label className="block text-sm font-medium text-charcoal">
                   Model
-                  <Input className="mt-2" name="model" placeholder={provider.id === "native" ? "closira-baseline" : "gpt-4o-mini, claude-3-5-sonnet, gemini-1.5-pro"} />
+                  <Input className="mt-2" name="model" placeholder={provider.id === "native" ? "clorisa-baseline" : "gpt-4o-mini, claude-3-5-sonnet, gemini-1.5-pro"} />
                 </label>
                 {provider.endpointLabel ? (
                   <label className="block text-sm font-medium text-charcoal">

@@ -8,7 +8,7 @@ export default function ForgotPasswordPage() {
       <main className="px-5 py-16">
         <AuthForm
           title="Reset your password"
-          description="Enter your email and Closira will prepare a secure password reset."
+          description="Enter your email and Clorisa will prepare a secure password reset."
           cta="Request reset link"
           intent="forgot-password"
           includePassword={false}

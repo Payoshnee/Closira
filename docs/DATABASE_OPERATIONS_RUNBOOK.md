@@ -1,6 +1,6 @@
 # Database Operations Runbook
 
-This runbook covers PostgreSQL operations for Closira staging and production.
+This runbook covers PostgreSQL operations for Clorisa staging and production.
 
 ## Required Tools
 
@@ -38,7 +38,7 @@ DATABASE_URL="postgresql://..." BACKUP_DIR="backups/postgres" ./infra/scripts/ba
 The script writes files like:
 
 ```text
-backups/postgres/closira-20260829T120000Z.dump
+backups/postgres/clorisa-20260829T120000Z.dump
 ```
 
 Production backups should be copied to encrypted private storage with restricted access.
@@ -48,7 +48,7 @@ Production backups should be copied to encrypted private storage with restricted
 Restore into an empty or disposable database first. The restore script uses `--clean --if-exists`.
 
 ```bash
-DATABASE_URL="postgresql://..." ./infra/scripts/restore-postgres.sh backups/postgres/closira-20260829T120000Z.dump
+DATABASE_URL="postgresql://..." ./infra/scripts/restore-postgres.sh backups/postgres/clorisa-20260829T120000Z.dump
 ```
 
 Production restore checklist:

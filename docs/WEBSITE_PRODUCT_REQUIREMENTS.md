@@ -2,11 +2,11 @@
 
 ## Scope
 
-Run 1 delivers the public Closira website, design system foundation, shared UI components, and documentation needed before dashboard implementation.
+Run 1 delivers the public Clorisa website, design system foundation, shared UI components, and documentation needed before dashboard implementation.
 
 ## Goals
 
-- Present Closira as a premium AI wardrobe and styling product.
+- Present Clorisa as a premium AI wardrobe and styling product.
 - Explain wardrobe organization, outfit planning, AI styling, smart shopping, analytics, privacy, and future try-on.
 - Provide responsive public routes for discovery and account entry.
 - Establish reusable components for later authenticated dashboard work.

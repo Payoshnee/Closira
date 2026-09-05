@@ -76,11 +76,11 @@ if command -v docker >/dev/null 2>&1; then
   docker compose up -d postgres redis
 
   print_step "Applying database migrations"
-  DATABASE_URL="${DATABASE_URL:-postgresql://closira:closira@localhost:5432/closira}" \
+  DATABASE_URL="${DATABASE_URL:-postgresql://clorisa:clorisa@localhost:5432/clorisa}" \
     npm --workspace services/api run prisma:migrate -- --name local_setup
 
   print_step "Seeding database"
-  DATABASE_URL="${DATABASE_URL:-postgresql://closira:closira@localhost:5432/closira}" \
+  DATABASE_URL="${DATABASE_URL:-postgresql://clorisa:clorisa@localhost:5432/clorisa}" \
     npm --workspace services/api run prisma:seed
 else
   print_warn "Skipping database migration and seed because Docker is not available."
@@ -92,12 +92,12 @@ python3 -m pip install -r services/ai/requirements.txt
 print_step "Training local baseline AI model"
 PYTHONPATH=services/ai python3 services/ai/scripts/train_baseline.py \
   --dataset services/ai/data/sample_manifest.jsonl \
-  --output services/ai/models/closira-baseline.json
+  --output services/ai/models/clorisa-baseline.json
 
 print_step "Evaluating local baseline AI model"
 PYTHONPATH=services/ai python3 services/ai/scripts/evaluate_baseline.py \
   --dataset services/ai/data/sample_manifest.jsonl \
-  --model services/ai/models/closira-baseline.json
+  --model services/ai/models/clorisa-baseline.json
 
 if command -v flutter >/dev/null 2>&1; then
   print_step "Installing Flutter mobile dependencies"
@@ -106,7 +106,7 @@ fi
 
 print_step "Running verification checks"
 npm --workspace services/api run build
-PYTHONPATH=services/ai CLOSIRA_MODEL_PATH=services/ai/models/closira-baseline.json python3 -m pytest services/ai/tests
+PYTHONPATH=services/ai CLORISA_MODEL_PATH=services/ai/models/clorisa-baseline.json python3 -m pytest services/ai/tests
 npm --workspace apps/web-admin run lint
 npm --workspace apps/web-admin exec tsc -- --noEmit
 npm --workspace apps/web-admin run build
@@ -123,7 +123,7 @@ Useful next commands:
   npm --workspace services/api run start
 
   # Start AI service with trained baseline model
-  CLOSIRA_MODEL_PATH=services/ai/models/closira-baseline.json \
+  CLORISA_MODEL_PATH=services/ai/models/clorisa-baseline.json \
   PYTHONPATH=services/ai python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 
   # Start web app

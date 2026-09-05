@@ -41,12 +41,12 @@ export const pricingPlans: PricingPlan[] = [
   {
     name: "Early access",
     price: "$0",
-    description: "For founding users helping shape Closira.",
+    description: "For founding users helping shape Clorisa.",
     features: ["Digital wardrobe foundation", "Outfit planning preview", "AI styling waitlist", "Privacy-first account controls"],
     cta: "Join early access"
   },
   {
-    name: "Closira Plus",
+    name: "Clorisa Plus",
     price: "Coming soon",
     description: "For wardrobe analytics, AI styling, and shopping decisions.",
     features: ["Advanced AI stylist", "Smart shopping checks", "Wardrobe analytics", "Priority feature access"],

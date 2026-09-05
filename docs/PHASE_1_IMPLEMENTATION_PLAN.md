@@ -2,7 +2,7 @@
 
 ## What Will Be Built
 
-Phase 1 creates the runnable monorepo foundation for Closira: workspace metadata, environment examples, Docker Compose infrastructure, a NestJS API health endpoint, a FastAPI AI health endpoint, a Next.js admin shell, and Flutter project foundation.
+Phase 1 creates the runnable monorepo foundation for Clorisa: workspace metadata, environment examples, Docker Compose infrastructure, a NestJS API health endpoint, a FastAPI AI health endpoint, a Next.js admin shell, and Flutter project foundation.
 
 ## Files Created or Modified
 

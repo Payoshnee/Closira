@@ -1,10 +1,10 @@
-# Closira Production Readiness Audit
+# Clorisa Production Readiness Audit
 
 Last updated: 2026-08-30
 
 ## Current Summary
 
-Closira is no longer only a frontend scaffold. The repository now contains a real Next.js dashboard, NestJS API, Prisma/PostgreSQL schema, pgvector embedding table, auth/session flows, wardrobe/outfit/calendar APIs, AI orchestration endpoints, billing gateway abstraction, admin APIs, setup/run scripts, CI, API hardening, request logging, health checks, and database operations scripts.
+Clorisa is no longer only a frontend scaffold. The repository now contains a real Next.js dashboard, NestJS API, Prisma/PostgreSQL schema, pgvector embedding table, auth/session flows, wardrobe/outfit/calendar APIs, AI orchestration endpoints, billing gateway abstraction, admin APIs, setup/run scripts, CI, API hardening, request logging, health checks, and database operations scripts.
 
 It is still not market-ready production software. The biggest remaining gaps are AI model quality, mobile API integration, real object storage image processing, payment provider activation, end-to-end test coverage, deployment automation, and final legal/brand work.
 
@@ -54,7 +54,7 @@ Built:
 
 - Flutter app folder exists.
 - Android/iOS project shell exists.
-- Closira mobile app shell replaces the generated counter app.
+- Clorisa mobile app shell replaces the generated counter app.
 - Mobile auth, dashboard, wardrobe, outfits/calendar, AI/shopping, and profile/settings screens exist.
 - Mobile login/register/session restore call the NestJS API.
 - Mobile access and refresh tokens persist through Flutter Secure Storage.

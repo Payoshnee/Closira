@@ -64,7 +64,7 @@ export class LoginLockoutService {
 }
 
 function keyFor(email: string) {
-  return `closira:auth:lockout:${email}`;
+  return `clorisa:auth:lockout:${email}`;
 }
 
 function loginLockWindowMs() {

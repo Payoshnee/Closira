@@ -25,7 +25,7 @@ export function DashboardHome({ session, summary }: { session: AuthSession; summ
       <section className="rounded-lg bg-charcoal p-6 text-white shadow-soft lg:p-8">
         <p className="text-sm font-semibold uppercase tracking-wide text-champagne">Dashboard home</p>
         <h1 className="mt-3 text-3xl font-bold sm:text-4xl">Welcome back, {session.user.name}.</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-300">This shell anchors Closira&apos;s authenticated workspace. Run 3 through Run 6 modules are active and ready for backend wiring.</p>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-300">This shell anchors Clorisa&apos;s authenticated workspace. Run 3 through Run 6 modules are active and ready for backend wiring.</p>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

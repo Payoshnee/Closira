@@ -4,7 +4,7 @@ set -euo pipefail
 STORAGE_BUCKET="${STORAGE_BUCKET:-}"
 STORAGE_REGION="${STORAGE_REGION:-auto}"
 STORAGE_ENDPOINT="${STORAGE_ENDPOINT:-}"
-STORAGE_TEST_KEY="${STORAGE_TEST_KEY:-health/closira-storage-check.txt}"
+STORAGE_TEST_KEY="${STORAGE_TEST_KEY:-health/clorisa-storage-check.txt}"
 
 if [[ -z "$STORAGE_BUCKET" ]]; then
   echo "ERROR: STORAGE_BUCKET is required." >&2
@@ -23,7 +23,7 @@ fi
 
 TMP_FILE="$(mktemp)"
 trap 'rm -f "$TMP_FILE"' EXIT
-printf "closira object storage verification %s\n" "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" > "$TMP_FILE"
+printf "clorisa object storage verification %s\n" "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" > "$TMP_FILE"
 
 aws s3api put-object \
   --bucket "$STORAGE_BUCKET" \

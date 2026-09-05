@@ -45,7 +45,7 @@ Big Production Items Still Left
 Recommended Next Order
 1. AI provider key encryption + provider health checks.
 2. Billing entitlement enforcement + webhook verification.
-3. Replace Flutter counter app with real Closira mobile shell.
+3. Replace Flutter counter app with real Clorisa mobile shell.
 4. Add API/web e2e tests.
 5. Add deployment automation.
 6. Build real AI dataset/model pipeline.

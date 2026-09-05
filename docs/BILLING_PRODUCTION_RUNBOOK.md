@@ -1,6 +1,6 @@
 # Billing Production Runbook
 
-Closira supports a gateway-agnostic checkout path plus provider-specific webhook normalization for Stripe, Razorpay, Paddle, PayPal, manual, and custom compatible gateways.
+Clorisa supports a gateway-agnostic checkout path plus provider-specific webhook normalization for Stripe, Razorpay, Paddle, PayPal, manual, and custom compatible gateways.
 
 ## Required Environment
 

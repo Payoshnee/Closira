@@ -33,4 +33,4 @@ Version `0.1.0`: Phase 1 project foundation with runnable Flutter, Next.js, Nest
 
 ## Long-Term Vision
 
-Closira becomes a privacy-first personal fashion memory and styling layer that connects owned wardrobe data, planning, shopping decisions, and virtual preview experiences.
+Clorisa becomes a privacy-first personal fashion memory and styling layer that connects owned wardrobe data, planning, shopping decisions, and virtual preview experiences.

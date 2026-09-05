@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, NestMiddleware } from "@nestjs/common";
 import type { NextFunction, Request, Response } from "express";
 
-const CSRF_COOKIE = "closira_csrf";
+const CSRF_COOKIE = "clorisa_csrf";
 const CSRF_HEADER = "x-csrf-token";
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 const PUBLIC_AUTH_PATHS = new Set([
@@ -20,7 +20,7 @@ export class CsrfMiddleware implements NestMiddleware {
       return;
     }
 
-    const hasAuthCookie = Boolean(request.cookies?.closira_access || request.cookies?.closira_refresh);
+    const hasAuthCookie = Boolean(request.cookies?.clorisa_access || request.cookies?.clorisa_refresh);
     if (!hasAuthCookie) {
       next();
       return;

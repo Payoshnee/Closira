@@ -52,7 +52,7 @@ export class EntitlementsService {
   }
 
   async requireAiRequest(userId: string) {
-    if (process.env.CLOSIRA_FORCE_AI_PROVIDER === "OLLAMA" && process.env.CLOSIRA_ALLOW_LOCAL_OLLAMA_ON_FREE !== "false") return;
+    if (process.env.CLORISA_FORCE_AI_PROVIDER === "OLLAMA" && process.env.CLORISA_ALLOW_LOCAL_OLLAMA_ON_FREE !== "false") return;
     const { limits } = await this.current(userId);
     const limit = numberLimit(limits.aiRequestsPerMonth);
     const used = await this.prisma.aiJob.count({
@@ -68,7 +68,7 @@ export class EntitlementsService {
 
   async requireProvider(userId: string, provider: AiProviderType) {
     if (provider === "NATIVE") return;
-    if (provider === "OLLAMA" && process.env.CLOSIRA_ALLOW_LOCAL_OLLAMA_ON_FREE !== "false") return;
+    if (provider === "OLLAMA" && process.env.CLORISA_ALLOW_LOCAL_OLLAMA_ON_FREE !== "false") return;
     const { limits } = await this.current(userId);
     if (limits.customProviders !== true) {
       throw new ForbiddenException("Custom AI providers require a paid plan.");
@@ -78,7 +78,7 @@ export class EntitlementsService {
 
 export function verifyGatewaySignature(rawBody: unknown, headers: Record<string, string | string[] | undefined>, secret?: string) {
   if (!secret) return;
-  const signature = headerValue(headers, "x-closira-signature") ?? headerValue(headers, "x-webhook-signature");
+  const signature = headerValue(headers, "x-clorisa-signature") ?? headerValue(headers, "x-webhook-signature");
   if (!signature) {
     throw new ForbiddenException("Missing webhook signature.");
   }

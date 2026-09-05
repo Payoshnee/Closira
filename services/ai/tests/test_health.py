@@ -9,7 +9,7 @@ def test_health() -> None:
 
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
-    assert response.json()["service"] == "closira-ai"
+    assert response.json()["service"] == "clorisa-ai"
 
 
 def test_analyze_clothing() -> None:

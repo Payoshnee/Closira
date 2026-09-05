@@ -28,7 +28,7 @@ export class ErrorTrackingService {
           ...(process.env.ERROR_TRACKING_WEBHOOK_TOKEN ? { Authorization: `Bearer ${process.env.ERROR_TRACKING_WEBHOOK_TOKEN}` } : {})
         },
         body: JSON.stringify({
-          service: "closira-api",
+          service: "clorisa-api",
           environment: process.env.NODE_ENV ?? "development",
           ...payload
         })

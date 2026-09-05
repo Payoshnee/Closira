@@ -7,7 +7,7 @@ if [[ -z "${SMTP_HOST:-}" ]]; then
 fi
 
 SMTP_PORT="${SMTP_PORT:-587}"
-MAIL_FROM="${MAIL_FROM:-Closira <no-reply@closira.local>}"
+MAIL_FROM="${MAIL_FROM:-Clorisa <no-reply@clorisa.local>}"
 MAIL_TO="${1:-${TEST_EMAIL_TO:-}}"
 
 if [[ -z "${MAIL_TO}" ]]; then
@@ -28,11 +28,11 @@ async function main() {
 
   await transporter.verify();
   await transporter.sendMail({
-    from: process.env.MAIL_FROM || "Closira <no-reply@closira.local>",
+    from: process.env.MAIL_FROM || "Clorisa <no-reply@clorisa.local>",
     to: process.env.TEST_EMAIL_TO || process.argv[1],
-    subject: "Closira SMTP verification",
-    text: "Closira SMTP verification passed.",
-    html: "<p>Closira SMTP verification passed.</p>",
+    subject: "Clorisa SMTP verification",
+    text: "Clorisa SMTP verification passed.",
+    html: "<p>Clorisa SMTP verification passed.</p>",
   });
   console.log("SMTP verification email sent.");
 }

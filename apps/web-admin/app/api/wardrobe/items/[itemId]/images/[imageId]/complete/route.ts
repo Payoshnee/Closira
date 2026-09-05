@@ -10,7 +10,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ it
     .getAll()
     .map((cookie) => `${cookie.name}=${cookie.value}`)
     .join("; ");
-  const csrfToken = cookieStore.get("closira_csrf")?.value;
+  const csrfToken = cookieStore.get("clorisa_csrf")?.value;
 
   const response = await fetch(`${apiUrl}/wardrobe/items/${itemId}/images/${imageId}/complete`, {
     method: "POST",

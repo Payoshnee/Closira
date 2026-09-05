@@ -9,12 +9,12 @@ function hash(value: string) {
 
 async function main() {
   const user = await prisma.user.upsert({
-    where: { email: "demo@closira.com" },
+    where: { email: "demo@clorisa.com" },
     update: {},
     create: {
-      email: "demo@closira.com",
-      passwordHash: hash("ClosiraDemo123!"),
-      name: "Closira Demo",
+      email: "demo@clorisa.com",
+      passwordHash: hash("ClorisaDemo123!"),
+      name: "Clorisa Demo",
       emailVerifiedAt: new Date(),
       profile: {
         create: {
@@ -30,12 +30,12 @@ async function main() {
   });
 
   const admin = await prisma.user.upsert({
-    where: { email: "admin@closira.com" },
+    where: { email: "admin@clorisa.com" },
     update: {},
     create: {
-      email: "admin@closira.com",
-      passwordHash: hash("ClosiraAdmin123!"),
-      name: "Closira Admin",
+      email: "admin@clorisa.com",
+      passwordHash: hash("ClorisaAdmin123!"),
+      name: "Clorisa Admin",
       role: "ADMIN",
       emailVerifiedAt: new Date()
     }
@@ -217,10 +217,10 @@ async function main() {
     create: {
       userId: user.id,
       provider: "NATIVE",
-      displayName: "Closira Native AI",
+      displayName: "Clorisa Native AI",
       isEnabled: true,
       isDefault: true,
-      model: "closira-baseline"
+      model: "clorisa-baseline"
     }
   });
 
@@ -279,7 +279,7 @@ async function main() {
     }
   });
 
-  console.log("Seeded Closira production baseline data.");
+  console.log("Seeded Clorisa production baseline data.");
 }
 
 main()

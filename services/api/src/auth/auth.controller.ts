@@ -3,8 +3,8 @@ import type { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 
 type AuthCookies = {
-  closira_access?: string;
-  closira_refresh?: string;
+  clorisa_access?: string;
+  clorisa_refresh?: string;
 };
 
 @Controller("auth")
@@ -23,22 +23,22 @@ export class AuthController {
 
   @Post("logout")
   logout(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
-    return this.auth.logout(this.bearer(request) ?? this.cookies(request).closira_refresh, response);
+    return this.auth.logout(this.bearer(request) ?? this.cookies(request).clorisa_refresh, response);
   }
 
   @Delete("account")
   deleteAccount(@Req() request: Request, @Body() body: { password?: string }, @Res({ passthrough: true }) response: Response) {
-    return this.auth.deleteAccount(this.bearer(request) ?? this.cookies(request).closira_access, body.password, response);
+    return this.auth.deleteAccount(this.bearer(request) ?? this.cookies(request).clorisa_access, body.password, response);
   }
 
   @Post("refresh")
   refresh(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
-    return this.auth.refresh(this.bearer(request) ?? this.cookies(request).closira_refresh, response);
+    return this.auth.refresh(this.bearer(request) ?? this.cookies(request).clorisa_refresh, response);
   }
 
   @Get("me")
   me(@Req() request: Request) {
-    return this.auth.me(this.bearer(request) ?? this.cookies(request).closira_access);
+    return this.auth.me(this.bearer(request) ?? this.cookies(request).clorisa_access);
   }
 
   @Post("forgot-password")

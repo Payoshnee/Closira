@@ -16,7 +16,7 @@
 ## Legal and Trust Flow
 
 1. Visitor reviews `/privacy` and `/terms`.
-2. Visitor can contact Closira from `/contact`.
+2. Visitor can contact Clorisa from `/contact`.
 
 ## Deferred Flow
 

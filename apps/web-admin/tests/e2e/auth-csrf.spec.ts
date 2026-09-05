@@ -18,6 +18,6 @@ test("browser receives csrf cookie after failed auth mutation path is exercised"
   await page.getByLabel(/password/i).fill("wrong-password");
   await page.getByRole("button", { name: /sign in/i }).click();
   await page.waitForLoadState("networkidle");
-  const csrf = (await page.context().cookies()).find((cookie) => cookie.name === "closira_csrf");
+  const csrf = (await page.context().cookies()).find((cookie) => cookie.name === "clorisa_csrf");
   expect(csrf?.sameSite).toBeTruthy();
 });

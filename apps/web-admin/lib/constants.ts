@@ -1,7 +1,7 @@
 export const siteConfig = {
-  name: "Closira",
+  name: "Clorisa",
   description:
-    "Closira helps you organize your clothes, create outfits, avoid duplicate shopping, and get AI-powered styling suggestions from your own wardrobe.",
-  supportEmail: "hello@closira.com"
+    "Clorisa helps you organize your clothes, create outfits, avoid duplicate shopping, and get AI-powered styling suggestions from your own wardrobe.",
+  supportEmail: "hello@clorisa.com"
 };
 

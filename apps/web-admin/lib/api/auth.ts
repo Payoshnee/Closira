@@ -115,7 +115,7 @@ async function getCookieHeader() {
 
 async function getCsrfToken() {
   const cookieStore = await cookies();
-  return cookieStore.get("closira_csrf")?.value;
+  return cookieStore.get("clorisa_csrf")?.value;
 }
 
 async function persistSetCookie(headers: Headers) {

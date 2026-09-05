@@ -7,13 +7,13 @@ export default function LoginPage() {
     <PublicShell>
       <main className="px-5 py-16">
         <AuthForm
-          title="Log in to Closira"
-          description="Access your private wardrobe dashboard with a secure Closira session."
+          title="Log in to Clorisa"
+          description="Access your private wardrobe dashboard with a secure Clorisa session."
           cta="Log in"
           intent="login"
           footer={
             <>
-              New to Closira?{" "}
+              New to Clorisa?{" "}
               <Link href="/signup" className="font-semibold text-rose-700 hover:text-rose-500">
                 Create an account
               </Link>

@@ -2,7 +2,7 @@
 
 ## Business Goal
 
-Build Closira into a trusted fashion utility that improves wardrobe visibility, outfit decision-making, reuse, and shopping confidence while protecting private personal images.
+Build Clorisa into a trusted fashion utility that improves wardrobe visibility, outfit decision-making, reuse, and shopping confidence while protecting private personal images.
 
 ## Target Users
 

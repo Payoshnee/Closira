@@ -22,32 +22,32 @@ export class MetricsService {
 
   renderPrometheus() {
     const lines = [
-      "# HELP closira_api_up API process liveness.",
-      "# TYPE closira_api_up gauge",
-      "closira_api_up 1",
-      "# HELP closira_api_uptime_seconds API process uptime in seconds.",
-      "# TYPE closira_api_uptime_seconds gauge",
-      `closira_api_uptime_seconds ${Math.round(process.uptime())}`,
-      "# HELP closira_api_started_at Unix timestamp when the API process started.",
-      "# TYPE closira_api_started_at gauge",
-      `closira_api_started_at ${Math.floor(this.startedAt.getTime() / 1000)}`,
-      "# HELP closira_api_http_requests_total HTTP requests grouped by method, route, and status class.",
-      "# TYPE closira_api_http_requests_total counter"
+      "# HELP clorisa_api_up API process liveness.",
+      "# TYPE clorisa_api_up gauge",
+      "clorisa_api_up 1",
+      "# HELP clorisa_api_uptime_seconds API process uptime in seconds.",
+      "# TYPE clorisa_api_uptime_seconds gauge",
+      `clorisa_api_uptime_seconds ${Math.round(process.uptime())}`,
+      "# HELP clorisa_api_started_at Unix timestamp when the API process started.",
+      "# TYPE clorisa_api_started_at gauge",
+      `clorisa_api_started_at ${Math.floor(this.startedAt.getTime() / 1000)}`,
+      "# HELP clorisa_api_http_requests_total HTTP requests grouped by method, route, and status class.",
+      "# TYPE clorisa_api_http_requests_total counter"
     ];
 
     for (const [key, metric] of this.requests.entries()) {
       const [method, route, statusGroup] = key.split(" ");
-      lines.push(`closira_api_http_requests_total{method="${method}",route="${route}",status="${statusGroup}"} ${metric.count}`);
+      lines.push(`clorisa_api_http_requests_total{method="${method}",route="${route}",status="${statusGroup}"} ${metric.count}`);
     }
 
     lines.push(
-      "# HELP closira_api_http_request_duration_ms_sum Total request duration in milliseconds.",
-      "# TYPE closira_api_http_request_duration_ms_sum counter"
+      "# HELP clorisa_api_http_request_duration_ms_sum Total request duration in milliseconds.",
+      "# TYPE clorisa_api_http_request_duration_ms_sum counter"
     );
 
     for (const [key, metric] of this.requests.entries()) {
       const [method, route, statusGroup] = key.split(" ");
-      lines.push(`closira_api_http_request_duration_ms_sum{method="${method}",route="${route}",status="${statusGroup}"} ${Math.round(metric.totalDurationMs)}`);
+      lines.push(`clorisa_api_http_request_duration_ms_sum{method="${method}",route="${route}",status="${statusGroup}"} ${Math.round(metric.totalDurationMs)}`);
     }
 
     return `${lines.join("\n")}\n`;

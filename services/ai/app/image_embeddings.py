@@ -19,9 +19,9 @@ class ImageEmbeddingResult:
 
 class ImageEmbedder:
     def __init__(self) -> None:
-        self.provider = os.getenv("CLOSIRA_IMAGE_EMBEDDING_PROVIDER", "auto").lower()
-        self.model_name = os.getenv("CLOSIRA_OPENCLIP_MODEL", "ViT-L-14")
-        self.pretrained = os.getenv("CLOSIRA_OPENCLIP_PRETRAINED", "openai")
+        self.provider = os.getenv("CLORISA_IMAGE_EMBEDDING_PROVIDER", "auto").lower()
+        self.model_name = os.getenv("CLORISA_OPENCLIP_MODEL", "ViT-L-14")
+        self.pretrained = os.getenv("CLORISA_OPENCLIP_PRETRAINED", "openai")
         self._clip_model = None
         self._clip_preprocess = None
         self._torch = None
@@ -44,7 +44,7 @@ class ImageEmbedder:
         seed = f"{item_name or ''}:{image_url or ''}"
         return ImageEmbeddingResult(
             embedding=stable_text_embedding(seed),
-            model="closira-local-hash-embedding-768-dev",
+            model="clorisa-local-hash-embedding-768-dev",
             fallback_used=True,
         )
 

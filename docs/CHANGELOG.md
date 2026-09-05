@@ -2,7 +2,7 @@
 
 ## 0.0.0 - Phase 0 Documentation Bootstrap
 
-- Created documentation-first architecture for Closira.
+- Created documentation-first architecture for Clorisa.
 - Defined product requirements, system architecture, folder structure, database schema, API specification, UI/UX guide, AI modules, security/privacy rules, phase plan, testing plan, deployment guide, and roadmap.
 - Created initial monorepo directory skeleton.
 
