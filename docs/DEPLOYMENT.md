@@ -211,7 +211,8 @@ ollama pull nomic-embed-text:latest
 
 CLORISA_FORCE_AI_PROVIDER=OLLAMA \
 OLLAMA_BASE_URL=http://localhost:11434 \
-OLLAMA_MODEL=llama3:8b \
+OLLAMA_MODEL=qwen2.5vl:3b \
+OLLAMA_API_KEY=your-dybrain-project-token \
 OLLAMA_EMBEDDING_MODEL=nomic-embed-text:latest \
 ./run.sh all
 ```

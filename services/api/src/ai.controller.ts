@@ -395,12 +395,13 @@ export class AiController {
     }
 
     if (provider.provider === "OLLAMA") {
+      const headers: Record<string, string> = process.env.OLLAMA_API_KEY ? { Authorization: `Bearer ${process.env.OLLAMA_API_KEY}` } : {};
       const response = await postJsonWithHeaders(`${baseUrl.replace(/\/$/, "")}/api/generate`, {
         model,
         prompt,
         stream: false,
         format: "json"
-      }, {});
+      }, headers);
       return parseAiJson(typeof response.response === "string" ? response.response : "{}");
     }
 
@@ -489,13 +490,14 @@ export class AiController {
     }
 
     if (provider.provider === "OLLAMA") {
+      const headers: Record<string, string> = process.env.OLLAMA_API_KEY ? { Authorization: `Bearer ${process.env.OLLAMA_API_KEY}` } : {};
       const response = await postJsonWithHeaders(`${baseUrl.replace(/\/$/, "")}/api/generate`, {
         model,
         prompt,
         images: [image.base64],
         stream: false,
         format: "json"
-      }, {});
+      }, headers);
       return parseAiJson(typeof response.response === "string" ? response.response : "{}");
     }
 
